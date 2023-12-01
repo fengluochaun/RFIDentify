@@ -44,6 +44,11 @@ namespace RFIDentify.DAO
             return await this.SQLiteHelper.Query<User>("User", where);
         }
 
+        public async Task<List<User>> GetAllUser()
+        {
+            return await this.SQLiteHelper.Query<User>("User", "where 1=1");
+        }
+
         public async Task<int> UpdateUser(User user)
         {
             byte[] picData = null;

@@ -233,8 +233,8 @@ namespace RFIDentify.DAO
                             {
                                 if(item.PropertyType == typeof(System.Drawing.Image))
                                 {
-                                    var ds = Convert.ChangeType(ImgUtil.Byte2Image(value), item.PropertyType);
-                                    item.SetValue(model, ds, null);
+                                    //var ds = Convert.ChangeType(ImgUtil.Byte2Image(value), item.PropertyType);
+                                    item.SetValue(model, ImgUtil.Byte2Image(value), null);
                                 }
                                 else
                                 {

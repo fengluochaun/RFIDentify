@@ -12,10 +12,11 @@ using System.Windows.Forms;
 using org.llrp.ltk.types;
 using System.Globalization;
 using ScottPlot;
+using Sunny.UI;
 
 namespace RFIDentify.UI
 {
-    public partial class FormIdentify : Form
+    public partial class FormIdentify : UIPage
     {
         private static Dictionary<string, Queue<double>> datas = new Dictionary<string, Queue<double>>();
         private static List<double[]> DisDatas
