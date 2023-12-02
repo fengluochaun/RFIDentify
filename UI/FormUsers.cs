@@ -26,7 +26,6 @@ namespace RFIDentify.UI
 
         private void FormUsers_Load(object sender, EventArgs e)
         {
-            //this.DGV_Users.AutoGenerateColumns = false;
             List<UserDisplayDto> us = users.Select(user => UserDisplayDto.GetFromUser(user)).ToList();
             this.DGV_Users.DataSource = us;
         }

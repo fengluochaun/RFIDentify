@@ -28,23 +28,23 @@
         /// </summary>
         private void InitializeComponent()
         {
-            lbl_Identifcation = new Label();
+            lbl_Identification = new Label();
             btn_Start = new Button();
             btn_Stop = new Button();
             btn_AddUser = new Button();
             plot = new ScottPlot.FormsPlot();
             SuspendLayout();
             // 
-            // lbl_Identifcation
+            // lbl_Identification
             // 
-            lbl_Identifcation.AutoSize = true;
-            lbl_Identifcation.Font = new Font("Microsoft YaHei UI", 15F, FontStyle.Regular, GraphicsUnit.Point);
-            lbl_Identifcation.Location = new Point(58, 65);
-            lbl_Identifcation.Name = "lbl_Identifcation";
-            lbl_Identifcation.Size = new Size(139, 32);
-            lbl_Identifcation.TabIndex = 0;
-            lbl_Identifcation.Text = "识别对象：";
-            lbl_Identifcation.Click += lbl_Identifcation_Click;
+            lbl_Identification.AutoSize = true;
+            lbl_Identification.Font = new Font("Microsoft YaHei UI", 15F, FontStyle.Regular, GraphicsUnit.Point);
+            lbl_Identification.Location = new Point(58, 65);
+            lbl_Identification.Name = "lbl_Identification";
+            lbl_Identification.Size = new Size(169, 32);
+            lbl_Identification.TabIndex = 0;
+            lbl_Identification.Text = "识别对象：12";
+            lbl_Identification.Click += lbl_Identifcation_Click;
             // 
             // btn_Start
             // 
@@ -89,15 +89,13 @@
             // 
             // FormIdentify
             // 
-            AutoScaleDimensions = new SizeF(9F, 20F);
-            AutoScaleMode = AutoScaleMode.Font;
+            AutoScaleMode = AutoScaleMode.None;
             ClientSize = new Size(1030, 700);
             Controls.Add(plot);
             Controls.Add(btn_AddUser);
             Controls.Add(btn_Stop);
             Controls.Add(btn_Start);
-            Controls.Add(lbl_Identifcation);
-            FormBorderStyle = FormBorderStyle.None;
+            Controls.Add(lbl_Identification);
             Name = "FormIdentify";
             Text = "FormIdentify";
             ResumeLayout(false);
@@ -106,7 +104,7 @@
 
         #endregion
 
-        private Label lbl_Identifcation;
+        private Label lbl_Identification;
         private Button btn_Start;
         private Button btn_Stop;
         private Button btn_AddUser;

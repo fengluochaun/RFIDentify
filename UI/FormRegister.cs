@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using com.sun.org.apache.xml.@internal.dtm.@ref;
 using com.sun.xml.@internal.bind.v2.model.core;
 using java.security;
 using Newtonsoft.Json;
@@ -19,30 +20,30 @@ namespace RFIDentify.UI
 {
     public partial class FormRegister : UIPage
     {
+        #region 定义变量
+        private UserDao userDao = new();
+        private string basePath = AppDomain.CurrentDomain.SetupInformation.ApplicationBase!;
+        // 修改数据
         private User? user;
+        private BindingList<string> userCSVPaths = new BindingList<string>();
+        // 暂存数据，待提交
         private UserDisplayDto? stashUser;
         private Dictionary<string, string> stashFiles = new Dictionary<string, string>();
         private Image? stashPicture;
-        private UserDao userDao = new();
-        private int id;
-        private string basePath = System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase!;
-        private BindingList<string> userCSVPaths = new BindingList<string>();
-        private List<string> stashUserCSVPaths = new List<string>();
+        
+        private int trainDataSum = 0;
+        private bool addOrEdit = false;        
         private int collectionSum;
-        private bool addOrEdit = false;
         public int CollectionSum
         {
             get => collectionSum;
-            set
-            {
-                collectionSum = value;
-                //lbl_CollectionSum.Text = CollectionSum.ToString() + "/50";
-            }
+            set => collectionSum = value; 
         }
+        #endregion
         public FormRegister()
         {
             InitializeComponent();
-            id = userDao.GetUserNum().Result + 1;
+            var id = userDao.GetUserNum().Result + 1;
             user = new User() { Id = id };
             stashUser = new UserDisplayDto() { Id = id};
             this.listBox.DataSource = userCSVPaths;
@@ -51,29 +52,62 @@ namespace RFIDentify.UI
 
         public FormRegister(int userId) 
         {
+            InitializeComponent();
+            UpdateByUserId(userId);
+            this.listBox.DataSource = userCSVPaths;
+        }
+        #region 初始化或更新UI
+        public void UpdateByUserId(int userId)
+        {
             user = userDao.GetUserById(userId).Result.FirstOrDefault();
             stashPicture = user!.Picture;
             stashUser = JsonConvert.DeserializeObject<UserDisplayDto>(JsonConvert.SerializeObject(UserDisplayDto.GetFromUser(user))!);
-            InitializeComponent();
-            this.listBox.DataSource = userCSVPaths;
             this.addOrEdit = true;
             UpdateText();
+            InitListBox();
+        }
+        private void InitListBox()
+        {
+            userCSVPaths.Clear();
+            string path = Path.Combine(basePath, "User", $"{user!.Id}");
+            if (Directory.Exists(path))
+            {
+                foreach (string file in Directory.GetFiles(path))
+                {
+                    Console.WriteLine(file);
+                    userCSVPaths.Add(file.Replace(basePath, ""));
+                }
+            }
+            else
+            {
+                Console.WriteLine("文件夹不存在.");
+                Directory.CreateDirectory(path);
+            }
+            this.listBox.Refresh();
         }
 
         private void UpdateText()
         {
             txt_Id.Text = user!.Id.ToString();
             txt_Age.Text = user!.Age.ToString();
-            txt_Name.Text = user!.Name!.ToString();
-            txt_Telephone.Text = user!.Telephone!.ToString();
-            txt_Description.Text = user!.Description!.ToString();
+            txt_Name.Text = user.Name ?? string.Empty;
+            txt_Telephone.Text = user!.Telephone ?? string.Empty;
+            txt_Description.Text = user!.Description ?? string.Empty;
         }
+        #endregion
 
+        #region UI事件
         private void btn_Save_Click(object sender, EventArgs e)
         {
-            stashUser = JsonConvert.DeserializeObject<UserDisplayDto>(JsonConvert.SerializeObject(UserDisplayDto.GetFromUser(user))!);
+            this.stashUser!.Name = txt_Name.Text;
+            this.stashUser!.Age = int.Parse(txt_Age.Text);
+            this.stashUser!.Telephone = txt_Telephone.Text;
+            this.stashUser!.Description = txt_Description.Text;
             stashPicture = user!.Picture;
             CopyStashFiles();
+            //GenerateUserTrainCSV();            ;
+            this.roundProcess.Value = CalculateCompletion();
+            MessageBox.Show("保存成功！");
         }
 
         private void btn_FromExplorer_Click(object sender, EventArgs e)
@@ -95,7 +129,7 @@ namespace RFIDentify.UI
                         Directory.CreateDirectory(destinationFilePath);
                         destinationFilePath = Path.Combine(destinationFilePath, $"user{user!.Id}--{CollectionSum}.csv");
                         stashFiles.Add(selectedFilePath, destinationFilePath);
-                        userCSVPaths.Add(selectedFilePath);
+                        userCSVPaths.Add(destinationFilePath.Replace(basePath, ""));
                         this.listBox.Refresh();
                     }
                     else
@@ -112,7 +146,9 @@ namespace RFIDentify.UI
 
         private void btn_FromEquipment_Click(object sender, EventArgs e)
         {
-
+            FormRegisterFromEquipment formRegisterEQ = new(this);
+            formRegisterEQ.ShowDialog();
+            this.listBox.Refresh();
         }
 
         private void btn_UploadPhoto_Click(object sender, EventArgs e)
@@ -131,6 +167,7 @@ namespace RFIDentify.UI
                         string selectedFilePath = openFileDialog.FileName;
                         Console.WriteLine("选择的文件路径：" + selectedFilePath);
                         user!.Picture = Image.FromFile(selectedFilePath);
+                        MessageBox.Show("上传成功！");
                     }
                     else
                     {
@@ -157,7 +194,35 @@ namespace RFIDentify.UI
                 await userDao.AddUser(user);  
             }
         }
-
+        #endregion
+        
+        private int CalculateCompletion()
+        {
+            int completion = 0;
+            int completionUnit = 10;
+            if (string.IsNullOrEmpty(stashUser!.Name))
+            {
+                completion += completionUnit;
+            }
+            if (stashUser!.Age != 0)
+            {
+                completion += completionUnit;
+            }
+            if (string.IsNullOrEmpty(stashUser!.Telephone))
+            {
+                completion += completionUnit;
+            }
+            if (string.IsNullOrEmpty(stashUser!.Description))
+            {
+                completion += completionUnit;
+            }
+            if (stashPicture == null)
+            {
+                completion += completionUnit;
+            }
+            completion += trainDataSum;
+            return completion;
+        }
         private void CopyStashFiles()
         {
             //Copy each item in the stashfiles from the source address to the destination address
@@ -168,6 +233,14 @@ namespace RFIDentify.UI
                 File.Copy(sourceFilePath, destinationFilePath);
             }
             stashFiles.Clear();
+        }
+
+        private void GenerateUserTrainCSV()
+        {
+            // 调用接口，destinationFilePath的数组为参数
+            // 返回是否成功和找到的峰值个数, find_peak 的结果放在destinationFilePath的同级目录的Train文件夹中
+            // 即User/2/...csv => User/2/Train/...csv
+            //trainDataSum = ...;
         }
     }
 }

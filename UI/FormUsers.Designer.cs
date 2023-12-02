@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            Sunny.UI.UIDataGridView DGV_Users;
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
@@ -61,6 +62,63 @@
             // 
             userBindingSource.DataSource = typeof(Models.User);
             // 
+            // DGV_Users
+            // 
+            dataGridViewCellStyle1.BackColor = Color.FromArgb(235, 243, 255);
+            DGV_Users.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
+            DGV_Users.BackgroundColor = Color.White;
+            DGV_Users.BorderStyle = BorderStyle.Fixed3D;
+            DGV_Users.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.BackColor = Color.White;
+            dataGridViewCellStyle2.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            dataGridViewCellStyle2.ForeColor = Color.Black;
+            dataGridViewCellStyle2.SelectionBackColor = Color.AntiqueWhite;
+            dataGridViewCellStyle2.SelectionForeColor = Color.Black;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
+            DGV_Users.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            DGV_Users.ColumnHeadersHeight = 50;
+            DGV_Users.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            DGV_Users.Columns.AddRange(new DataGridViewColumn[] { col_Id, Col_Name, col_Age, col_Telephone, col_Description });
+            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = SystemColors.Window;
+            dataGridViewCellStyle3.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            dataGridViewCellStyle3.ForeColor = Color.FromArgb(48, 48, 48);
+            dataGridViewCellStyle3.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.False;
+            DGV_Users.DefaultCellStyle = dataGridViewCellStyle3;
+            DGV_Users.EnableHeadersVisualStyles = false;
+            DGV_Users.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            DGV_Users.GridColor = Color.White;
+            DGV_Users.Location = new Point(47, 141);
+            DGV_Users.Name = "DGV_Users";
+            DGV_Users.RectColor = Color.White;
+            DGV_Users.RowHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
+            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = Color.Snow;
+            dataGridViewCellStyle4.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            dataGridViewCellStyle4.ForeColor = Color.FromArgb(48, 48, 48);
+            dataGridViewCellStyle4.SelectionBackColor = Color.FromArgb(128, 255, 255);
+            dataGridViewCellStyle4.SelectionForeColor = Color.Black;
+            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.True;
+            DGV_Users.RowHeadersDefaultCellStyle = dataGridViewCellStyle4;
+            DGV_Users.RowHeadersWidth = 51;
+            dataGridViewCellStyle5.BackColor = Color.White;
+            dataGridViewCellStyle5.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            dataGridViewCellStyle5.ForeColor = Color.Black;
+            dataGridViewCellStyle5.SelectionBackColor = Color.OldLace;
+            dataGridViewCellStyle5.SelectionForeColor = Color.Black;
+            DGV_Users.RowsDefaultCellStyle = dataGridViewCellStyle5;
+            DGV_Users.RowTemplate.Height = 40;
+            DGV_Users.ScrollBarColor = Color.Silver;
+            DGV_Users.ScrollBarRectColor = Color.White;
+            DGV_Users.ScrollBarStyleInherited = false;
+            DGV_Users.SelectedIndex = -1;
+            DGV_Users.Size = new Size(936, 528);
+            DGV_Users.StripeOddColor = Color.FromArgb(235, 243, 255);
+            DGV_Users.TabIndex = 1;
+            // 
             // col_Id
             // 
             col_Id.DataPropertyName = "Id";
@@ -68,6 +126,7 @@
             col_Id.HeaderText = "编号";
             col_Id.MinimumWidth = 6;
             col_Id.Name = "col_Id";
+            col_Id.ReadOnly = true;
             col_Id.Width = 125;
             // 
             // Col_Name
@@ -103,62 +162,6 @@
             col_Description.HeaderText = "描述";
             col_Description.MinimumWidth = 6;
             col_Description.Name = "col_Description";
-            // 
-            // DGV_Users
-            // 
-            dataGridViewCellStyle1.BackColor = Color.FromArgb(235, 243, 255);
-            DGV_Users.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
-            DGV_Users.BackgroundColor = Color.White;
-            DGV_Users.BorderStyle = BorderStyle.Fixed3D;
-            DGV_Users.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
-            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle2.BackColor = Color.White;
-            dataGridViewCellStyle2.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            dataGridViewCellStyle2.ForeColor = Color.Black;
-            dataGridViewCellStyle2.SelectionBackColor = Color.AntiqueWhite;
-            dataGridViewCellStyle2.SelectionForeColor = Color.Black;
-            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
-            DGV_Users.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
-            DGV_Users.ColumnHeadersHeight = 50;
-            DGV_Users.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            DGV_Users.Columns.AddRange(new DataGridViewColumn[] { col_Id, Col_Name, col_Age, col_Telephone, col_Description });
-            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle3.BackColor = SystemColors.Window;
-            dataGridViewCellStyle3.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            dataGridViewCellStyle3.ForeColor = Color.FromArgb(48, 48, 48);
-            dataGridViewCellStyle3.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.False;
-            DGV_Users.DefaultCellStyle = dataGridViewCellStyle3;
-            DGV_Users.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            DGV_Users.GridColor = Color.White;
-            DGV_Users.Location = new Point(47, 141);
-            DGV_Users.Name = "DGV_Users";
-            DGV_Users.RectColor = Color.White;
-            DGV_Users.RowHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
-            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle4.BackColor = Color.Snow;
-            dataGridViewCellStyle4.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            dataGridViewCellStyle4.ForeColor = Color.FromArgb(48, 48, 48);
-            dataGridViewCellStyle4.SelectionBackColor = Color.FromArgb(128, 255, 255);
-            dataGridViewCellStyle4.SelectionForeColor = Color.Black;
-            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.True;
-            DGV_Users.RowHeadersDefaultCellStyle = dataGridViewCellStyle4;
-            DGV_Users.RowHeadersWidth = 51;
-            dataGridViewCellStyle5.BackColor = Color.White;
-            dataGridViewCellStyle5.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            dataGridViewCellStyle5.ForeColor = Color.Black;
-            dataGridViewCellStyle5.SelectionBackColor = Color.OldLace;
-            dataGridViewCellStyle5.SelectionForeColor = Color.Black;
-            DGV_Users.RowsDefaultCellStyle = dataGridViewCellStyle5;
-            DGV_Users.RowTemplate.Height = 40;
-            DGV_Users.ScrollBarColor = Color.Silver;
-            DGV_Users.ScrollBarRectColor = Color.White;
-            DGV_Users.ScrollBarStyleInherited = false;
-            DGV_Users.SelectedIndex = -1;
-            DGV_Users.Size = new Size(936, 528);
-            DGV_Users.StripeOddColor = Color.FromArgb(235, 243, 255);
-            DGV_Users.TabIndex = 1;
             // 
             // FormUsers
             // 

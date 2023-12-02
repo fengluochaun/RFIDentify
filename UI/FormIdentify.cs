@@ -18,6 +18,8 @@ namespace RFIDentify.UI
 {
     public partial class FormIdentify : UIPage
     {
+        private FormMain _parent;
+
         private static Dictionary<string, Queue<double>> datas = new Dictionary<string, Queue<double>>();
         private static List<double[]> DisDatas
         {
@@ -31,7 +33,7 @@ namespace RFIDentify.UI
         public Batcher<RFIDData> batcher;
         private string args = "Speedwayr-11-25-ab.local";//读写器连接路径
         private ScottPlot.Plottable.DataLogger Logger;
-        public FormIdentify()
+        public FormIdentify(FormMain parent)
         {
             InitializeComponent();
             libltkjava.UpdateData += UpdateQueueValue;
@@ -40,6 +42,7 @@ namespace RFIDentify.UI
                 batchSize: 20,
                 interval: TimeSpan.FromSeconds(5)
                 );
+            this._parent = parent;
         }
 
         private async void btn_Start_Click(object sender, EventArgs e)
@@ -50,19 +53,29 @@ namespace RFIDentify.UI
             StartReadShow();
         }
 
-        private void btn_Stop_Click(object sender, EventArgs e)
+        private async void btn_Stop_Click(object sender, EventArgs e)
         {
-
+            string filepath = System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase + @"python\dist\single_identify\ss\l.csv";
+            Dictionary<string, string> param = new Dictionary<string, string>();
+            param.Add("file", filepath);
+            var result = await WebUtils.InvokeWebapi("http://127.0.0.1:5000", "user_recognition", "post", param);
+            this.lbl_Identification.Text = "识别对象：" + result.Result.ToString();
         }
 
         private void btn_AddUser_Click(object sender, EventArgs e)
         {
-
+            _parent.SelectPage(1002);
         }
 
         private void lbl_Identifcation_Click(object sender, EventArgs e)
         {
-
+            int id;
+            if (int.TryParse((lbl_Identification.Text.SplitLast("：")), out id))
+            {
+                _parent.formRegister.UpdateByUserId(id);
+                _parent.SelectPage(1002);
+                _parent.test();
+            }
         }
 
         private int calculateTime()

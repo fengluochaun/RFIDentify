@@ -145,7 +145,10 @@ namespace RFIDentify.DAO
                     if (connection.State != System.Data.ConnectionState.Open) connection.Open();
                     cmd.Connection = connection;
                     cmd.CommandText = sql;
-                    return cmd.ExecuteNonQuery();
+                    int a = cmd.ExecuteNonQuery();
+
+                    return a;
+                    //return cmd.ExecuteNonQuery();
                 }
             }
             catch (Exception ex)
@@ -261,6 +264,61 @@ namespace RFIDentify.DAO
             }
         }
         /// <summary>
+        /// 完整的sql语句，执行查询标量
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <returns></returns>
+        public async Task<int> ExecuteScalar(string sql)
+        {
+            try
+            {
+                using (SQLiteCommand cmd = new SQLiteCommand())
+                {
+                    if (connection.State != System.Data.ConnectionState.Open) connection.Open();
+                    cmd.Connection = connection;
+                    cmd.CommandText = sql;
+                    return Convert.ToInt32(await cmd.ExecuteScalarAsync());
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("执行出错:" + sql + "\r\n" + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                closeConn();
+            }
+        }   
+
+        public async Task<int> ExecuteScalar(string sql, params SQLiteParameter[] parameters)
+        {
+            try
+            {
+                using (SQLiteCommand cmd = new SQLiteCommand())
+                {
+                    if (connection.State != System.Data.ConnectionState.Open) connection.Open();
+                    cmd.Connection = connection;
+                    cmd.CommandText = sql;
+                    if (parameters.Length > 0)
+                    {
+                        cmd.Parameters.AddRange(parameters);
+                    }
+                    return Convert.ToInt32(await cmd.ExecuteScalarAsync());
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("执行出错:" + sql + "\r\n" + ex.Message);
+                return 0;
+            }
+            finally
+            {
+                closeConn();
+            }
+        }
+
+        /// <summary>
         /// 查询，完整的sql语句
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -328,7 +386,7 @@ namespace RFIDentify.DAO
         {
             try
             {
-                List<T> datas = null;
+                List<T> datas = new List<T>();
                 using (SQLiteCommand cmd = new SQLiteCommand())
                 {
                     if (connection.State != System.Data.ConnectionState.Open) connection.Open();

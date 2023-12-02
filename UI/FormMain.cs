@@ -13,22 +13,40 @@ namespace RFIDentify.UI
 {
     public partial class FormMain : UIAsideMainFrame
     {
+        public FormIdentify formIdentify;
+        public FormUsers formUsers;
+        public FormRegister formRegister;
         public FormMain()
         {
             InitializeComponent();
+
+            formIdentify = new FormIdentify(this);
+            formUsers = new FormUsers();
+            formRegister = new FormRegister();
+
             Aside.TabControl = MainTabControl;
 
             int pageindex = 1000;
 
-            AddPage(new FormIdentify(), pageindex);
+            
+
+            AddPage(formIdentify, pageindex);
             Aside.CreateNode("识别", pageindex++);
 
-            AddPage(new FormUsers(), pageindex);
+            AddPage(formUsers, pageindex);
             Aside.CreateNode("认证", pageindex++);
 
-            AddPage(new FormRegister(18), pageindex);
+            AddPage(formRegister, pageindex);
             Aside.CreateNode("其它", pageindex++);
 
         }
+        
+        public void test()
+        {
+            int a = 0;
+            a = a + 1;
+        }
+        
+
     }
 }

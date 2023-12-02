@@ -11,10 +11,10 @@ using Sunny.UI;
 
 namespace RFIDentify.UI
 {
-    public partial class FormRegisterFromByEquipment : UIHeaderMainFrame
+    public partial class FormRegisterFromEquipment : UIHeaderMainFrame
     {
         private FormRegister _formRegister;
-        public FormRegisterFromByEquipment(FormRegister formRegister)
+        public FormRegisterFromEquipment(FormRegister formRegister)
         {
             InitializeComponent();
             _formRegister = formRegister;

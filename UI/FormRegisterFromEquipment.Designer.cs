@@ -1,6 +1,6 @@
 ﻿namespace RFIDentify.UI
 {
-    partial class FormRegisterFromByEquipment
+    partial class FormRegisterFromEquipment
     {
         /// <summary>
         /// Required designer variable.
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormRegisterFromByEquipment));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormRegisterFromEquipment));
             SuspendLayout();
             // 
             // Header

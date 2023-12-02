@@ -19,22 +19,25 @@ namespace RFIDentify.DAO
         {
             string tableName = user.GetType().GetTName();
             byte[] picData = null;
-            if(user.Picture != null)
-            {
-                picData = ImgUtil.ImageToByte(user.Picture);
-            }
-            SQLiteParameter sQLiteParameter = new SQLiteParameter("@picData", DbType.Object, picData.Length);
-            sQLiteParameter.Value = picData;
             SQLiteParameter[] parameters = new SQLiteParameter[]
             {
                 new SQLiteParameter("@name", user.Name),
                 new SQLiteParameter("@age", user.Age),
                 new SQLiteParameter("@description", user.Description),
-                new SQLiteParameter("@telephone", user.Telephone),
-                sQLiteParameter
+                new SQLiteParameter("@telephone", user.Telephone)
             };
-            string sql = $"insert into [{tableName} ('name','age','description','telephone','picture') " +
-                $"values ('@name','@age','@description','@telephone','@picture')]";
+            if (user.Picture != null)
+            {
+                picData = ImgUtil.ImageToByte(user.Picture);
+                SQLiteParameter sqliteParameter = new SQLiteParameter("@picData", DbType.Object, picData!.Length);
+                sqliteParameter.Value = picData;
+                parameters.Append(sqliteParameter);
+            }            
+            
+            //string sql = $"insert into [{tableName} ('name','age','description','telephone','picture') " +
+            //    $"values ('@name','@age','@description','@telephone','@picture')]";
+            string sql = $"insert into [{tableName}] ('name','age','description','telephone') " +
+                $"values (@name,@age,@description,@telephone)";
             return await this.SQLiteHelper.Execute(sql, parameters) ;
         }
 
@@ -75,8 +78,8 @@ namespace RFIDentify.DAO
 
         public async Task<int> GetUserNum()
         {
-            string sql = "select COUNT(*) from User";
-            int a = await this.SQLiteHelper.Execute(sql);
+            string sql = "select COUNT(*) from User where 1=1";
+            int a = await this.SQLiteHelper.ExecuteScalar(sql);
             return a ;
         }
     }
