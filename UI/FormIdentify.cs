@@ -13,6 +13,8 @@ using org.llrp.ltk.types;
 using System.Globalization;
 using ScottPlot;
 using Sunny.UI;
+using System.Collections.Concurrent;
+using javax.xml.crypto;
 
 namespace RFIDentify.UI
 {
@@ -20,19 +22,23 @@ namespace RFIDentify.UI
     {
         private FormMain _parent;
 
-        private static Dictionary<string, Queue<double>> datas = new Dictionary<string, Queue<double>>();
-        private static List<double[]> DisDatas
-        {
-            get
-            {
-                return datas.Values.Select(x => x.ToArray()).ToList();
-            }
-        }
+        private static ConcurrentDictionary<string, (string, int)> datas = new ConcurrentDictionary<string, (string, int)>();
         private libltkjava libltkjava = new libltkjava();
         private long currentTimeStamp;
         public Batcher<RFIDData> batcher;
         private string args = "Speedwayr-11-25-ab.local";//读写器连接路径
-        private ScottPlot.Plottable.DataLogger Logger;
+        private UILineOption option = new();
+        private Color[] colors =
+        {
+            Color.LightSalmon,
+            Color.LightYellow,
+            Color.DarkGray,
+            Color.OliveDrab,
+            Color.OrangeRed,
+            Color.PaleGreen,
+            Color.DarkTurquoise,
+            Color.LightPink
+        };
         public FormIdentify(FormMain parent)
         {
             InitializeComponent();
@@ -43,18 +49,23 @@ namespace RFIDentify.UI
                 interval: TimeSpan.FromSeconds(5)
                 );
             this._parent = parent;
+            option.ToolTip.Visible = true;
+            option.Title = new UITitle();
+            option.Title.Text = "RFID";
+            option.Title.SubText = "PhaseLineChart";
+            this.lineChart.SetOption(option);
         }
 
         private async void btn_Start_Click(object sender, EventArgs e)
         {
-            //await libltkjava.powerON(args, @"ss\l.csv");
+            //await libltkjava.powerON(args, @"Collection\Identification\l.csv");
             currentTimeStamp = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds();
-            InitChart();
             StartReadShow();
         }
 
         private async void btn_Stop_Click(object sender, EventArgs e)
         {
+            libltkjava.PowerOFF();
             string filepath = System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase + @"python\dist\single_identify\ss\l.csv";
             Dictionary<string, string> param = new Dictionary<string, string>();
             param.Add("file", filepath);
@@ -93,17 +104,16 @@ namespace RFIDentify.UI
                 for (int i = 0; i < 100000; i++)
                 {
                     List<RFIDData> data = new List<RFIDData>();
-                    for (int j = 0; j < 5; j++)
+                    for (int j = 1; j <= 5; j++)
                     {
                         RFIDData arg = new RFIDData()
                         {
-                            tag = j.ToString(),
+                            tag = "val" + j.ToString(),
                             phase = 4096 * random.NextDouble(),
                         };
                         batcher.Add(arg);
                         data.Add(arg);
-                    }
-                    //UpdateQueueValue(data);                    
+                    }       
                     await Task.Delay(1);
                 }
             })
@@ -111,17 +121,6 @@ namespace RFIDentify.UI
                 IsBackground = true
             };
             t.Start();
-        }
-
-        private void InitChart()
-        {
-            //var count = DisDatas.Count;
-            //for(int i = 0; i < count; i++)
-            //{
-            //    this.plot.Plot.AddDataLogger(label: "Tag"+i.ToString());
-            //}
-            Logger = this.plot.Plot.AddDataLogger(label: "Tag1");
-            Logger.ViewFull();
         }
 
         /// <summary>
@@ -137,13 +136,8 @@ namespace RFIDentify.UI
             }
             else
             {
-                if (Logger.Count == Logger.CountOnLastRender) return;
-                if (Logger.Count >= 1000 && Logger.Count <= 1040)
-                {
-                    Logger.ViewSlide();
-                }
-                //this.plot.Render();
-                this.plot.Refresh();
+                this.lineChart.SetOption(option);
+                this.lineChart.Refresh();
             }
         }
 
@@ -155,26 +149,35 @@ namespace RFIDentify.UI
         {
             using (batch)
             {
-                foreach (RFIDData data in batch)
+                try
                 {
-                    //if (!datas.ContainsKey(data.tag!))
-                    //{
-                    //    if (datas.Count >= 5)
-                    //    {                            
-                    //        continue;
-                    //    }
-                    //    datas.Add(data.tag!, new Queue<double>());
-                    //    datas[data.tag!].Enqueue(data.phase);
-                    //    return;
-                    //}
-                    //else if (datas[data.tag!].Count > 600)
-                    //{
-                    //    datas[data.tag!].Dequeue();
-                    //}
-                    //datas[data.tag!].Enqueue(data.phase);
-                    Logger.Add(calculateTime() * 100, data.phase);
+                    foreach (RFIDData data in batch)
+                    {
+                        if (!datas.ContainsKey(data.tag!))
+                        {
+                            string tag = "val" + (datas.Count + 1);
+                            datas.TryAdd(data.tag!, (tag, 0));
+                            var series = option.AddSeries(new UILineSeries(tag));
+                            series.SetMaxCount(1000);
+                            series.Color = colors[datas.Count + 1]; 
+                        }
+                        var tagValue = datas[data.tag!];
+                        tagValue.Item2++;
+                        datas[data.tag!] = tagValue;
+                        data.tag = tagValue.Item1;
+                        this.lineChart.Option.AddData(tagValue.Item1, tagValue.Item2++, DataProcess.Baseline(data).phase);
+                    }
+                    UpdateChart();
                 }
-                UpdateChart();
+                catch(ArgumentException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                catch(OverflowException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                
             }
         }
 
@@ -189,29 +192,6 @@ namespace RFIDentify.UI
             {
                 batcher.Add(arg);
             }
-            //if (datas.Count == 0)
-            //{
-            //    for (int i = 0; i < 5; i++)
-            //    {
-            //        datas[i.ToString()] = new Queue<double>(600);
-            //    }
-            //}
-            //Random r = new Random();
-            //for (int i = 0; i < 5; i++)
-            //{
-            //    string tag = i.ToString();
-            //    if (datas[tag].Count > 600)
-            //    {
-            //        for (int j = 0; j < num; j++)
-            //        {
-            //            datas[tag].Dequeue();
-            //        }
-            //    }
-            //    for (int j = 0; j < num; j++)
-            //    {
-            //        datas[tag].Enqueue(r.NextDouble() * 4096);
-            //    }
-            //}
         }
     }
 }

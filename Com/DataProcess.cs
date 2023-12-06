@@ -1,4 +1,5 @@
-﻿using java.lang;
+﻿using CsvHelper;
+using java.lang;
 using org.llrp.ltk.types;
 using System;
 using System.Collections.Generic;
@@ -15,23 +16,34 @@ namespace RFIDentify.Com
         public const int ChannelSize = 50;
         public static Dictionary<string, double[]>? BaseStand;
         public static string basePath = System.AppDomain.CurrentDomain.BaseDirectory;
-        public static string baseStandPath = "baseStand.csv";
+        public static string baseStandPath = "CollectionData/Base/baseStand.csv";
         public static void ReadBasePhase()
         {
             if(BaseStand != null)
             {
                 return;
             }
-            DataTable dt = CSVHelper.ReadCSV(basePath + baseStandPath);
             BaseStand = new Dictionary<string, double[]>();
+            //using (var reader = new StreamReader(basePath + baseStandPath))
+            //{
+            //    using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+            //    {
+            //        while (csv.Read())
+            //        {
+            //            var record = csv.GetRecord<double[]>();
+            //        }
+            //    }
+            //}
+            DataTable dt = CSVHelper.ReadCSV(basePath + baseStandPath, IndexColumn : 1);
+            
             foreach(DataColumn dc in dt.Columns)
             {
                 BaseStand.Add(dc.ColumnName.ToString(), new double[ChannelSize]);
             }
-            for(int i = 0; i < dt.Rows.Count; i++) {
+            for(int i = 1; i < dt.Rows.Count; i++) {
                 foreach (KeyValuePair<string, double[]> kvp in BaseStand)
                 {
-                    BaseStand[kvp.Key][i] = Convert.ToDouble(dt.Rows[i][kvp.Key]);
+                    BaseStand[kvp.Key][i-1] = Convert.ToDouble(dt.Rows[i][kvp.Key]);
                 }
             }
         }

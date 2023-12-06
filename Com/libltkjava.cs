@@ -23,7 +23,7 @@ namespace RFIDentify.Com
 {
     public class libltkjava : LLRPEndpoint
     {
-
+        #region 变量
         private LLRPConnection connection;
 
         public static string? WRITE_CSV_FILE_PATH;
@@ -51,7 +51,7 @@ namespace RFIDentify.Com
         public double currentRfPhase;
         public double currentPeakRSSI;
         public string epcname;
-
+        #endregion
 
         private UnsignedInteger getUniqueMessageID()
         {
@@ -829,16 +829,18 @@ namespace RFIDentify.Com
             try
             {                              
                 RFIDData arg = new RFIDData();
-                arg.time = DataProcess.ProcessTimestamp(currentReadTime.toBigInteger().toString());
+                //arg.time = DataProcess.ProcessTimestamp(currentReadTime.toBigInteger().toString());
+                arg.time = Convert.ToInt64(currentReadTime.toBigInteger().toString());
                 arg.tag = ename;
                 arg.phase = currentRfPhase;
                 arg.RSSI = currentPeakRSSI;
                 arg.channel = Convert.ToInt32(currentChannelIndex.toInteger().toString());
-                using (var writer = new StreamWriter(WRITE_CSV_FILE_PATH!))
+                using (var writer = new StreamWriter(System.IO.File.Open(WRITE_CSV_FILE_PATH!, FileMode.Append)))
                 {
                     using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
                     {
                         csv.WriteRecord(arg);
+                        csv.NextRecord();
                     }
                 }
                 UpdateData(new List<RFIDData>() { arg });
@@ -851,8 +853,6 @@ namespace RFIDentify.Com
 
             System.Console.WriteLine(epcString);
         }
-
-
 
 
         // messageReceived method is called whenever a message is received
@@ -898,7 +898,7 @@ namespace RFIDentify.Com
 
 
         public static string fileName;//公共变量文件名
-        public static string filePath = System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase;//公共变量CSV文件路径
+        public static string filePath = System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase!;//公共变量CSV文件路径
         //开机
         public async Task powerON(string args, string fileName)
         {

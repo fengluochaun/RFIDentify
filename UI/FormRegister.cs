@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using com.sun.org.apache.xml.@internal.dtm.@ref;
 using com.sun.xml.@internal.bind.v2.model.core;
 using java.security;
 using Newtonsoft.Json;
+using org.apache.log4j;
 using RFIDentify.DAO;
 using RFIDentify.Models;
 using RFIDentify.Models.Dto;
@@ -48,6 +50,13 @@ namespace RFIDentify.UI
             stashUser = new UserDisplayDto() { Id = id};
             this.listBox.DataSource = userCSVPaths;
             UpdateText();
+        }       
+        private string demo()
+        {
+            string str = "P1 & (今天 | 明天) & @综测";
+            ExpressionParser parser = new();
+            ExpressionNode node = parser.Parse(str);
+            return str;
         }
 
         public FormRegister(int userId) 
@@ -99,14 +108,15 @@ namespace RFIDentify.UI
         #region UI事件
         private void btn_Save_Click(object sender, EventArgs e)
         {
-            this.stashUser!.Name = txt_Name.Text;
-            this.stashUser!.Age = int.Parse(txt_Age.Text);
-            this.stashUser!.Telephone = txt_Telephone.Text;
-            this.stashUser!.Description = txt_Description.Text;
-            stashPicture = user!.Picture;
-            CopyStashFiles();
-            //GenerateUserTrainCSV();            ;
-            this.roundProcess.Value = CalculateCompletion();
+            this.txt_Description.Text = demo();
+            //this.stashUser!.Name = txt_Name.Text;
+            //this.stashUser!.Age = int.Parse(txt_Age.Text);
+            //this.stashUser!.Telephone = txt_Telephone.Text;
+            //this.stashUser!.Description = txt_Description.Text;
+            //stashPicture = user!.Picture;
+            //CopyStashFiles();
+            ////GenerateUserTrainCSV();            ;
+            //this.roundProcess.Value = CalculateCompletion();
             MessageBox.Show("保存成功！");
         }
 
@@ -241,6 +251,118 @@ namespace RFIDentify.UI
             // 返回是否成功和找到的峰值个数, find_peak 的结果放在destinationFilePath的同级目录的Train文件夹中
             // 即User/2/...csv => User/2/Train/...csv
             //trainDataSum = ...;
+        }
+    }
+
+    public class ExpressionNode
+    {
+        public string Value { get; set; }
+        public List<ExpressionNode> Children { get; set; }
+
+        public ExpressionNode()
+        {
+            Children = new List<ExpressionNode>();
+        }
+    }
+
+    public class ExpressionParser
+    {
+        private static readonly Dictionary<string, int> OperatorPrecedence = new Dictionary<string, int>
+        {
+            { "(", 0 },
+            { ")", 0 },
+            { "&", 1 },
+            { "|", 2 }
+        };
+
+        public ExpressionNode Parse(string expression)
+        {
+            var expressionStack = new Stack<ExpressionNode>();
+            var operatorStack = new Stack<string>();
+
+            foreach (var token in Tokenize(expression))
+            {
+                if (IsOperand(token))
+                {
+                    expressionStack.Push(new ExpressionNode { Value = token });
+                }
+                else if (IsOperator(token))
+                {
+                    while (operatorStack.Count > 0 && OperatorPrecedence[operatorStack.Peek()] >= OperatorPrecedence[token] && operatorStack.Peek() != "(")
+                    {
+                        PopOperator(expressionStack, operatorStack);
+                    }
+
+                    operatorStack.Push(token);
+                }
+                else if (token == "(")
+                {
+                    operatorStack.Push(token);
+                }
+                else if (token == ")")
+                {
+                    while (operatorStack.Count > 0 && operatorStack.Peek() != "(")
+                    {
+                        PopOperator(expressionStack, operatorStack);
+                    }
+
+                    if (operatorStack.Count == 0 || operatorStack.Peek() != "(")
+                    {
+                        throw new ArgumentException("Invalid expression: unbalanced parentheses");
+                    }
+
+                    operatorStack.Pop();
+                }
+            }
+
+            while (operatorStack.Count > 0)
+            {
+                PopOperator(expressionStack, operatorStack);
+            }
+
+            if (expressionStack.Count != 1 || operatorStack.Count != 0)
+            {
+                throw new ArgumentException("Invalid expression");
+            }
+
+            return expressionStack.Pop();
+        }
+
+        private IEnumerable<string> Tokenize(string expression)
+        {
+            var tokens = expression.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var token in tokens)
+            {
+                yield return token;
+            }
+        }
+
+        private bool IsOperand(string token)
+        {
+            return !IsOperator(token) && token != "(" && token != ")";
+        }
+
+        private bool IsOperator(string token)
+        {
+            return OperatorPrecedence.ContainsKey(token);
+        }
+
+        private void PopOperator(Stack<ExpressionNode> expressionStack, Stack<string> operatorStack)
+        {
+            var expressionNode = new ExpressionNode { Value = operatorStack.Pop() };
+
+            for (int i = expressionNode.Value == "&" ? 2 : 1; i > 0; i--)
+            {
+                if (expressionStack.Count == 0)
+                {
+                    throw new ArgumentException("Invalid expression");
+                }
+
+                expressionNode.Children.Insert(0, expressionStack.Pop());
+            }
+
+            expressionStack.Push(expressionNode);
         }
     }
 }

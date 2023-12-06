@@ -76,7 +76,7 @@ namespace RFIDentify.Com
          /// <param name="getColumns">获取多少列</param>
          /// <param name="haveTitleRow">是有标题行</param>
          /// <returns>DataTable</returns>
-         public static DataTable ReadCSV(string fullFileName, Int16 firstRow = 0, Int16 firstColumn = 0, Int16 getRows = 0, Int16 getColumns = 0, bool haveTitleRow = true)
+         public static DataTable ReadCSV(string fullFileName, Int16 firstRow = 0, Int16 firstColumn = 0, Int16 getRows = 0, Int16 getColumns = 0, bool haveTitleRow = true, int IndexColumn = 0)
          {
              DataTable dt = new DataTable();
              FileStream fs = new FileStream(fullFileName, System.IO.FileMode.Open, System.IO.FileAccess.Read);
@@ -124,7 +124,7 @@ namespace RFIDentify.Com
                      DataRow dr = dt.NewRow();
                      for (int j = firstColumn; j < (getColumns == 0 ? columnCount : firstColumn + getColumns); j++)
                      {
-                         dr[j - firstColumn] = aryLine[j];
+                         dr[j - firstColumn] = aryLine[j + IndexColumn];
                      }
                      dt.Rows.Add(dr);
  

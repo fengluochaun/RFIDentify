@@ -33,6 +33,7 @@
             btn_Stop = new Button();
             btn_AddUser = new Button();
             plot = new ScottPlot.FormsPlot();
+            lineChart = new Sunny.UI.UILineChart();
             SuspendLayout();
             // 
             // lbl_Identification
@@ -81,16 +82,30 @@
             // 
             // plot
             // 
-            plot.Location = new Point(14, 109);
+            plot.Location = new Point(247, 24);
             plot.Margin = new Padding(5, 4, 5, 4);
             plot.Name = "plot";
-            plot.Size = new Size(988, 566);
+            plot.Size = new Size(269, 130);
             plot.TabIndex = 2;
+            // 
+            // lineChart
+            // 
+            lineChart.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            lineChart.LegendFont = new Font("宋体", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            lineChart.Location = new Point(58, 151);
+            lineChart.MinimumSize = new Size(1, 1);
+            lineChart.MouseDownType = Sunny.UI.UILineChartMouseDownType.Zoom;
+            lineChart.Name = "lineChart";
+            lineChart.Size = new Size(928, 537);
+            lineChart.SubFont = new Font("宋体", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            lineChart.TabIndex = 3;
+            lineChart.Text = "uiLineChart1";
             // 
             // FormIdentify
             // 
             AutoScaleMode = AutoScaleMode.None;
             ClientSize = new Size(1030, 700);
+            Controls.Add(lineChart);
             Controls.Add(plot);
             Controls.Add(btn_AddUser);
             Controls.Add(btn_Stop);
@@ -109,5 +124,6 @@
         private Button btn_Stop;
         private Button btn_AddUser;
         private ScottPlot.FormsPlot plot;
+        private Sunny.UI.UILineChart lineChart;
     }
 }
