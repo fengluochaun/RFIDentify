@@ -13,6 +13,7 @@ using com.sun.xml.@internal.bind.v2.model.core;
 using java.security;
 using Newtonsoft.Json;
 using org.apache.log4j;
+using org.jdom;
 using RFIDentify.DAO;
 using RFIDentify.Models;
 using RFIDentify.Models.Dto;
@@ -26,43 +27,39 @@ namespace RFIDentify.UI
         private UserDao userDao = new();
         private string basePath = AppDomain.CurrentDomain.SetupInformation.ApplicationBase!;
         // 修改数据
-        private User? user;
+        public User? user;
         private BindingList<string> userCSVPaths = new BindingList<string>();
         // 暂存数据，待提交
         private UserDisplayDto? stashUser;
         private Dictionary<string, string> stashFiles = new Dictionary<string, string>();
         private Image? stashPicture;
-        
+
         private int trainDataSum = 0;
-        private bool addOrEdit = false;        
+        private bool addOrEdit = false;
         private int collectionSum;
         public int CollectionSum
         {
             get => collectionSum;
-            set => collectionSum = value; 
+            set => collectionSum = value;
         }
+        public FormMain _parent;
         #endregion
-        public FormRegister()
+        public FormRegister(FormMain formMain)
         {
             InitializeComponent();
             var id = userDao.GetUserNum().Result + 1;
             user = new User() { Id = id };
-            stashUser = new UserDisplayDto() { Id = id};
+            stashUser = new UserDisplayDto() { Id = id };
             this.listBox.DataSource = userCSVPaths;
+            _parent = formMain;
             UpdateText();
-        }       
-        private string demo()
-        {
-            string str = "P1 & (今天 | 明天) & @综测";
-            ExpressionParser parser = new();
-            ExpressionNode node = parser.Parse(str);
-            return str;
         }
 
-        public FormRegister(int userId) 
+        public FormRegister(FormMain formMain, int userId)
         {
             InitializeComponent();
             UpdateByUserId(userId);
+            _parent = formMain;
             this.listBox.DataSource = userCSVPaths;
         }
         #region 初始化或更新UI
@@ -74,6 +71,14 @@ namespace RFIDentify.UI
             this.addOrEdit = true;
             UpdateText();
             InitListBox();
+        }
+        public void UpdateByUserId()
+        {
+            var id = userDao.GetUserNum().Result + 1;
+            user = new User() { Id = id };
+            stashUser = new UserDisplayDto() { Id = id };
+            this.listBox.DataSource = userCSVPaths;
+            UpdateText();
         }
         private void InitListBox()
         {
@@ -108,23 +113,22 @@ namespace RFIDentify.UI
         #region UI事件
         private void btn_Save_Click(object sender, EventArgs e)
         {
-            this.txt_Description.Text = demo();
-            //this.stashUser!.Name = txt_Name.Text;
-            //this.stashUser!.Age = int.Parse(txt_Age.Text);
-            //this.stashUser!.Telephone = txt_Telephone.Text;
-            //this.stashUser!.Description = txt_Description.Text;
-            //stashPicture = user!.Picture;
-            //CopyStashFiles();
-            ////GenerateUserTrainCSV();            ;
-            //this.roundProcess.Value = CalculateCompletion();
+            this.stashUser!.Name = txt_Name.Text;
+            this.stashUser!.Age = int.Parse(txt_Age.Text);
+            this.stashUser!.Telephone = txt_Telephone.Text;
+            this.stashUser!.Description = txt_Description.Text;
+            stashPicture = user!.Picture;
+            CopyStashFiles();
+            //GenerateUserTrainCSV();            ;
+            this.roundProcess.Value = CalculateCompletion();
             MessageBox.Show("保存成功！");
         }
 
         private void btn_FromExplorer_Click(object sender, EventArgs e)
         {
             try
-            {            
-                using(OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                using (OpenFileDialog openFileDialog = new OpenFileDialog())
                 {
                     // 设置对话框的标题和过滤器
                     openFileDialog.Title = "选择用户文件";
@@ -156,8 +160,8 @@ namespace RFIDentify.UI
 
         private void btn_FromEquipment_Click(object sender, EventArgs e)
         {
-            FormRegisterFromEquipment formRegisterEQ = new(this);
-            formRegisterEQ.ShowDialog();
+            _parent.formRegisterFromEquipment.UpdateByUser(this);
+            _parent.SelectPage(1003);
             this.listBox.Refresh();
         }
 
@@ -201,11 +205,11 @@ namespace RFIDentify.UI
             }
             else
             {
-                await userDao.AddUser(user);  
+                await userDao.AddUser(user);
             }
         }
         #endregion
-        
+
         private int CalculateCompletion()
         {
             int completion = 0;
@@ -251,118 +255,6 @@ namespace RFIDentify.UI
             // 返回是否成功和找到的峰值个数, find_peak 的结果放在destinationFilePath的同级目录的Train文件夹中
             // 即User/2/...csv => User/2/Train/...csv
             //trainDataSum = ...;
-        }
-    }
-
-    public class ExpressionNode
-    {
-        public string Value { get; set; }
-        public List<ExpressionNode> Children { get; set; }
-
-        public ExpressionNode()
-        {
-            Children = new List<ExpressionNode>();
-        }
-    }
-
-    public class ExpressionParser
-    {
-        private static readonly Dictionary<string, int> OperatorPrecedence = new Dictionary<string, int>
-        {
-            { "(", 0 },
-            { ")", 0 },
-            { "&", 1 },
-            { "|", 2 }
-        };
-
-        public ExpressionNode Parse(string expression)
-        {
-            var expressionStack = new Stack<ExpressionNode>();
-            var operatorStack = new Stack<string>();
-
-            foreach (var token in Tokenize(expression))
-            {
-                if (IsOperand(token))
-                {
-                    expressionStack.Push(new ExpressionNode { Value = token });
-                }
-                else if (IsOperator(token))
-                {
-                    while (operatorStack.Count > 0 && OperatorPrecedence[operatorStack.Peek()] >= OperatorPrecedence[token] && operatorStack.Peek() != "(")
-                    {
-                        PopOperator(expressionStack, operatorStack);
-                    }
-
-                    operatorStack.Push(token);
-                }
-                else if (token == "(")
-                {
-                    operatorStack.Push(token);
-                }
-                else if (token == ")")
-                {
-                    while (operatorStack.Count > 0 && operatorStack.Peek() != "(")
-                    {
-                        PopOperator(expressionStack, operatorStack);
-                    }
-
-                    if (operatorStack.Count == 0 || operatorStack.Peek() != "(")
-                    {
-                        throw new ArgumentException("Invalid expression: unbalanced parentheses");
-                    }
-
-                    operatorStack.Pop();
-                }
-            }
-
-            while (operatorStack.Count > 0)
-            {
-                PopOperator(expressionStack, operatorStack);
-            }
-
-            if (expressionStack.Count != 1 || operatorStack.Count != 0)
-            {
-                throw new ArgumentException("Invalid expression");
-            }
-
-            return expressionStack.Pop();
-        }
-
-        private IEnumerable<string> Tokenize(string expression)
-        {
-            var tokens = expression.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-
-            foreach (var token in tokens)
-            {
-                yield return token;
-            }
-        }
-
-        private bool IsOperand(string token)
-        {
-            return !IsOperator(token) && token != "(" && token != ")";
-        }
-
-        private bool IsOperator(string token)
-        {
-            return OperatorPrecedence.ContainsKey(token);
-        }
-
-        private void PopOperator(Stack<ExpressionNode> expressionStack, Stack<string> operatorStack)
-        {
-            var expressionNode = new ExpressionNode { Value = operatorStack.Pop() };
-
-            for (int i = expressionNode.Value == "&" ? 2 : 1; i > 0; i--)
-            {
-                if (expressionStack.Count == 0)
-                {
-                    throw new ArgumentException("Invalid expression");
-                }
-
-                expressionNode.Children.Insert(0, expressionStack.Pop());
-            }
-
-            expressionStack.Push(expressionNode);
         }
     }
 }

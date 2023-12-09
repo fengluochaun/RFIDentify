@@ -306,7 +306,6 @@
             btn_Save.Size = new Size(125, 44);
             btn_Save.TabIndex = 12;
             btn_Save.Text = "保存";
-            btn_Save.TipsFont = new Font("宋体", 9F, FontStyle.Regular, GraphicsUnit.Point);
             btn_Save.Click += btn_Save_Click;
             // 
             // btn_FromEquipment
@@ -334,7 +333,6 @@
             btn_FromEquipment.Size = new Size(125, 44);
             btn_FromEquipment.TabIndex = 12;
             btn_FromEquipment.Text = "从设备";
-            btn_FromEquipment.TipsFont = new Font("宋体", 9F, FontStyle.Regular, GraphicsUnit.Point);
             btn_FromEquipment.Click += btn_FromEquipment_Click;
             // 
             // btn_FromExplorer
@@ -362,7 +360,6 @@
             btn_FromExplorer.Size = new Size(125, 44);
             btn_FromExplorer.TabIndex = 12;
             btn_FromExplorer.Text = "从文件";
-            btn_FromExplorer.TipsFont = new Font("宋体", 9F, FontStyle.Regular, GraphicsUnit.Point);
             btn_FromExplorer.Click += btn_FromExplorer_Click;
             // 
             // btn_Commit
@@ -390,7 +387,6 @@
             btn_Commit.Size = new Size(125, 44);
             btn_Commit.TabIndex = 12;
             btn_Commit.Text = "提交";
-            btn_Commit.TipsFont = new Font("宋体", 9F, FontStyle.Regular, GraphicsUnit.Point);
             btn_Commit.Click += btn_Commit_Click;
             // 
             // btn_UploadPhoto
@@ -418,6 +414,7 @@
             btn_UploadPhoto.Size = new Size(125, 44);
             btn_UploadPhoto.TabIndex = 12;
             btn_UploadPhoto.Text = "上传头像";
+            btn_UploadPhoto.TipsFont = new Font("宋体", 9F, FontStyle.Regular, GraphicsUnit.Point);
             btn_UploadPhoto.Click += btn_UploadPhoto_Click;
             // 
             // FormRegister

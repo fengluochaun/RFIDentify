@@ -29,23 +29,66 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            Sunny.UI.UIDataGridView DGV_Users;
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle5 = new DataGridViewCellStyle();
-            lbl1 = new Sunny.UI.UILabel();
-            userBindingSource = new BindingSource(components);
             col_Id = new DataGridViewTextBoxColumn();
             Col_Name = new DataGridViewTextBoxColumn();
             col_Age = new DataGridViewTextBoxColumn();
             col_Telephone = new DataGridViewTextBoxColumn();
             col_Description = new DataGridViewTextBoxColumn();
+            lbl1 = new Sunny.UI.UILabel();
+            userBindingSource = new BindingSource(components);
             DGV_Users = new Sunny.UI.UIDataGridView();
             ((System.ComponentModel.ISupportInitialize)userBindingSource).BeginInit();
             ((System.ComponentModel.ISupportInitialize)DGV_Users).BeginInit();
             SuspendLayout();
+            // 
+            // col_Id
+            // 
+            col_Id.DataPropertyName = "Id";
+            col_Id.FillWeight = 75F;
+            col_Id.HeaderText = "编号";
+            col_Id.MinimumWidth = 6;
+            col_Id.Name = "col_Id";
+            col_Id.ReadOnly = true;
+            col_Id.Width = 125;
+            // 
+            // Col_Name
+            // 
+            Col_Name.DataPropertyName = "Name";
+            Col_Name.HeaderText = "姓名";
+            Col_Name.MinimumWidth = 6;
+            Col_Name.Name = "Col_Name";
+            Col_Name.Width = 125;
+            // 
+            // col_Age
+            // 
+            col_Age.DataPropertyName = "Age";
+            col_Age.FillWeight = 75F;
+            col_Age.HeaderText = "年龄";
+            col_Age.MinimumWidth = 6;
+            col_Age.Name = "col_Age";
+            col_Age.Width = 125;
+            // 
+            // col_Telephone
+            // 
+            col_Telephone.DataPropertyName = "Telephone";
+            col_Telephone.FillWeight = 125F;
+            col_Telephone.HeaderText = "电话号码";
+            col_Telephone.MinimumWidth = 6;
+            col_Telephone.Name = "col_Telephone";
+            col_Telephone.Width = 125;
+            // 
+            // col_Description
+            // 
+            col_Description.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            col_Description.DataPropertyName = "Description";
+            col_Description.HeaderText = "描述";
+            col_Description.MinimumWidth = 6;
+            col_Description.Name = "col_Description";
             // 
             // lbl1
             // 
@@ -118,50 +161,8 @@
             DGV_Users.Size = new Size(936, 528);
             DGV_Users.StripeOddColor = Color.FromArgb(235, 243, 255);
             DGV_Users.TabIndex = 1;
-            // 
-            // col_Id
-            // 
-            col_Id.DataPropertyName = "Id";
-            col_Id.FillWeight = 75F;
-            col_Id.HeaderText = "编号";
-            col_Id.MinimumWidth = 6;
-            col_Id.Name = "col_Id";
-            col_Id.ReadOnly = true;
-            col_Id.Width = 125;
-            // 
-            // Col_Name
-            // 
-            Col_Name.DataPropertyName = "Name";
-            Col_Name.HeaderText = "姓名";
-            Col_Name.MinimumWidth = 6;
-            Col_Name.Name = "Col_Name";
-            Col_Name.Width = 125;
-            // 
-            // col_Age
-            // 
-            col_Age.DataPropertyName = "Age";
-            col_Age.FillWeight = 75F;
-            col_Age.HeaderText = "年龄";
-            col_Age.MinimumWidth = 6;
-            col_Age.Name = "col_Age";
-            col_Age.Width = 125;
-            // 
-            // col_Telephone
-            // 
-            col_Telephone.DataPropertyName = "Telephone";
-            col_Telephone.FillWeight = 125F;
-            col_Telephone.HeaderText = "电话号码";
-            col_Telephone.MinimumWidth = 6;
-            col_Telephone.Name = "col_Telephone";
-            col_Telephone.Width = 125;
-            // 
-            // col_Description
-            // 
-            col_Description.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            col_Description.DataPropertyName = "Description";
-            col_Description.HeaderText = "描述";
-            col_Description.MinimumWidth = 6;
-            col_Description.Name = "col_Description";
+            DGV_Users.CellContentDoubleClick += DGV_Users_CellContentDoubleClick;
+            DGV_Users.CellMouseClick += DGV_Users_CellMouseClick;
             // 
             // FormUsers
             // 
