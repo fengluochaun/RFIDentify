@@ -32,7 +32,6 @@
             btn_Start = new Button();
             btn_Stop = new Button();
             btn_AddUser = new Button();
-            plot = new ScottPlot.FormsPlot();
             lineChart = new Sunny.UI.UILineChart();
             SuspendLayout();
             // 
@@ -42,9 +41,9 @@
             lbl_Identification.Font = new Font("Microsoft YaHei UI", 15F, FontStyle.Regular, GraphicsUnit.Point);
             lbl_Identification.Location = new Point(58, 65);
             lbl_Identification.Name = "lbl_Identification";
-            lbl_Identification.Size = new Size(169, 32);
+            lbl_Identification.Size = new Size(139, 32);
             lbl_Identification.TabIndex = 0;
-            lbl_Identification.Text = "识别对象：12";
+            lbl_Identification.Text = "识别对象：";
             lbl_Identification.Click += lbl_Identifcation_Click;
             // 
             // btn_Start
@@ -80,14 +79,6 @@
             btn_AddUser.UseVisualStyleBackColor = true;
             btn_AddUser.Click += btn_AddUser_Click;
             // 
-            // plot
-            // 
-            plot.Location = new Point(247, 24);
-            plot.Margin = new Padding(5, 4, 5, 4);
-            plot.Name = "plot";
-            plot.Size = new Size(269, 130);
-            plot.TabIndex = 2;
-            // 
             // lineChart
             // 
             lineChart.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point);
@@ -106,7 +97,6 @@
             AutoScaleMode = AutoScaleMode.None;
             ClientSize = new Size(1030, 700);
             Controls.Add(lineChart);
-            Controls.Add(plot);
             Controls.Add(btn_AddUser);
             Controls.Add(btn_Stop);
             Controls.Add(btn_Start);
@@ -123,7 +113,6 @@
         private Button btn_Start;
         private Button btn_Stop;
         private Button btn_AddUser;
-        private ScottPlot.FormsPlot plot;
         private Sunny.UI.UILineChart lineChart;
     }
 }

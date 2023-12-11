@@ -81,9 +81,9 @@ namespace RFIDentify.UI
             _parent!.SelectPage(1002);
         }
 
-        private async void btn_CollectEnvir_Click(object sender, EventArgs e)
+        private void btn_CollectEnvir_Click(object sender, EventArgs e)
         {
-            await libltkjava.powerON(args, @"CollectionData\Base\BaseStand1");
+            libltkjava.powerON(args, @"CollectionData\Base\BaseStand1");
             StartReadShow();
         }
 

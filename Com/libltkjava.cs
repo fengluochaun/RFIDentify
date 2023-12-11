@@ -900,7 +900,7 @@ namespace RFIDentify.Com
         public static string fileName;//公共变量文件名
         public static string filePath = System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase!;//公共变量CSV文件路径
         //开机
-        public async Task powerON(string args, string fileName)
+        public void powerON(string args, string fileName)
         {
             BasicConfigurator.configure();
             java.io.File csvFile = null;

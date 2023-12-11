@@ -15,6 +15,7 @@ using ScottPlot;
 using Sunny.UI;
 using System.Collections.Concurrent;
 using javax.xml.crypto;
+using com.sun.org.apache.bcel.@internal.generic;
 
 namespace RFIDentify.UI
 {
@@ -39,6 +40,9 @@ namespace RFIDentify.UI
             Color.DarkTurquoise,
             Color.LightPink
         };
+
+        private static ManualResetEvent _threadOne = new ManualResetEvent(false);
+
         public FormIdentify(FormMain parent)
         {
             InitializeComponent();
@@ -54,27 +58,45 @@ namespace RFIDentify.UI
             option.Title.Text = "RFID";
             option.Title.SubText = "PhaseLineChart";
             this.lineChart.SetOption(option);
+            Thread thread = new Thread(StartReadShow)
+            {
+                IsBackground = true
+            };
+            thread.Start();
         }
 
         private async void btn_Start_Click(object sender, EventArgs e)
         {
             //await libltkjava.powerON(args, @"Collection\Identification\l.csv");
             currentTimeStamp = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds();
-            StartReadShow();
+            //StartReadShow();
+            _isOpen[0] = true;
+            _threadOne.Set();
         }
 
-        private async void btn_Stop_Click(object sender, EventArgs e)
+        private void btn_Stop_Click(object sender, EventArgs e)
         {
-            libltkjava.PowerOFF();
-            string filepath = System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase + @"python\dist\single_identify\ss\l.csv";
+            //libltkjava.PowerOFF();
+            string filepath = @"D:\feng\Documents\Tencent\1744665475\FileRecv\实验代码\test\RFIDentify_Backend\ss\l.csv";
+            _isOpen[0] = false;
             Dictionary<string, string> param = new Dictionary<string, string>();
             param.Add("file", filepath);
-            var result = await WebUtils.InvokeWebapi("http://127.0.0.1:5000", "user_recognition", "post", param);
-            this.lbl_Identification.Text = "识别对象：" + result.Result.ToString();
+            Task task = new Task(async () =>
+            {
+                var result = await WebUtils.InvokeWebapi("http://127.0.0.1:5000", "user_recognition", "post", param);
+                MethodInvoker mi = new MethodInvoker(() =>
+                {
+                    this.lbl_Identification.Text = "识别对象：" + result.Result.ToString();
+                });
+                this.BeginInvoke(mi);
+            });
+            task.Start();           
+            
         }
 
         private void btn_AddUser_Click(object sender, EventArgs e)
         {
+            _parent.formRegister.UpdateByUserId();
             _parent.SelectPage(1002);
         }
 
@@ -85,7 +107,6 @@ namespace RFIDentify.UI
             {
                 _parent.formRegister.UpdateByUserId(id);
                 _parent.SelectPage(1002);
-                _parent.test();
             }
         }
 
@@ -95,32 +116,33 @@ namespace RFIDentify.UI
             return (int)(nowTimeStamp - currentTimeStamp);
         }
 
-        public void StartReadShow()
-        {
-            Thread t = new Thread(async () =>
+        public static bool[] _isOpen = new bool[] { false };
+        public async void StartReadShow()
+        {           
+            //this.libltkjava.powerON(args, @"Collection\Identification\l.csv");
+            
+            //this.libltkjava.startRead();
+            Random random = new Random();
+            for (int i = 0; i < 100000; i++)
             {
-                //this.libltkjava.startRead();
-                Random random = new Random();
-                for (int i = 0; i < 100000; i++)
+                if (!_isOpen[0])
                 {
-                    List<RFIDData> data = new List<RFIDData>();
-                    for (int j = 1; j <= 5; j++)
-                    {
-                        RFIDData arg = new RFIDData()
-                        {
-                            tag = "val" + j.ToString(),
-                            phase = 4096 * random.NextDouble(),
-                        };
-                        batcher.Add(arg);
-                        data.Add(arg);
-                    }       
-                    await Task.Delay(1);
+                    _threadOne.Reset();
+                    _threadOne.WaitOne();
                 }
-            })
-            {
-                IsBackground = true
-            };
-            t.Start();
+                List<RFIDData> data = new List<RFIDData>();
+                for (int j = 1; j <= 5; j++)
+                {
+                    RFIDData arg = new RFIDData()
+                    {
+                        tag = "val" + j.ToString(),
+                        phase = 4096 * random.NextDouble(),
+                    };
+                    batcher.Add(arg);
+                    data.Add(arg);
+                }
+                await Task.Delay(1);
+            }            
         }
 
         /// <summary>
@@ -129,14 +151,14 @@ namespace RFIDentify.UI
         delegate void UpdateChartCallBack();
         private void UpdateChart()
         {
-            if (this.plot.InvokeRequired)
+            if (this.lineChart.InvokeRequired)
             {
                 UpdateChartCallBack updateChartCallBack = new UpdateChartCallBack(UpdateChart);
                 this.Invoke(updateChartCallBack);
             }
             else
             {
-                this.lineChart.SetOption(option);
+                //this.lineChart.SetOption(option);
                 this.lineChart.Refresh();
             }
         }
@@ -159,7 +181,7 @@ namespace RFIDentify.UI
                             datas.TryAdd(data.tag!, (tag, 0));
                             var series = option.AddSeries(new UILineSeries(tag));
                             series.SetMaxCount(1000);
-                            series.Color = colors[datas.Count + 1]; 
+                            series.Color = colors[datas.Count + 1];
                         }
                         var tagValue = datas[data.tag!];
                         tagValue.Item2++;
@@ -169,15 +191,15 @@ namespace RFIDentify.UI
                     }
                     UpdateChart();
                 }
-                catch(ArgumentException ex)
+                catch (ArgumentException ex)
                 {
                     Console.WriteLine(ex.Message);
                 }
-                catch(OverflowException ex)
+                catch (OverflowException ex)
                 {
                     Console.WriteLine(ex.Message);
                 }
-                
+
             }
         }
 
