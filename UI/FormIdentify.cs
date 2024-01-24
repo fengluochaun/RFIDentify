@@ -16,14 +16,20 @@ using Sunny.UI;
 using System.Collections.Concurrent;
 using javax.xml.crypto;
 using com.sun.org.apache.bcel.@internal.generic;
+using Timer = System.Windows.Forms.Timer;
+using javax.management;
 
 namespace RFIDentify.UI
 {
     public partial class FormIdentify : UIPage
     {
         private FormMain _parent;
+        public readonly int MaxMilliSecondRange = 6000;
 
-        private static ConcurrentDictionary<string, (string, int)> datas = new ConcurrentDictionary<string, (string, int)>();
+        private int timeout = 10000;
+		private static readonly ReaderWriterLockSlim rwLock = new ReaderWriterLockSlim();
+		private static ConcurrentDictionary<string, List<RFIDData>> datas = new ConcurrentDictionary<string, List<RFIDData>>();
+        
         private libltkjava libltkjava = new libltkjava();
         private long currentTimeStamp;
         public Batcher<RFIDData> batcher;
@@ -40,13 +46,14 @@ namespace RFIDentify.UI
             Color.DarkTurquoise,
             Color.LightPink
         };
+		private Timer chartRefreshTimer;
 
-        private static ManualResetEvent _threadOne = new ManualResetEvent(false);
+		private static ManualResetEvent _threadOne = new ManualResetEvent(false);
 
         public FormIdentify(FormMain parent)
         {
             InitializeComponent();
-            libltkjava.UpdateData += UpdateQueueValue;
+			libltkjava.UpdateData += UpdateQueueValue;
             batcher = new Batcher<RFIDData>(
                 processor: this.Process,
                 batchSize: 20,
@@ -57,20 +64,34 @@ namespace RFIDentify.UI
             option.Title = new UITitle();
             option.Title.Text = "RFID";
             option.Title.SubText = "PhaseLineChart";
+            //option.XAxisType = UIAxisType.DateTime;
+            //option.XAxis.AxisLabel.DateTimeFormat = "mm:ss";
             this.lineChart.SetOption(option);
-            Thread thread = new Thread(StartReadShow)
-            {
-                IsBackground = true
-            };
-            thread.Start();
-        }
+            
 
-        private async void btn_Start_Click(object sender, EventArgs e)
+			// 初始化 Timer
+			chartRefreshTimer = new Timer();
+			chartRefreshTimer.Interval = 50; // 设置定时器间隔，单位为毫秒（这里设置为5秒）
+			chartRefreshTimer.Tick += ChartRefreshTimer_Tick;
+
+			// 启动定时器
+			chartRefreshTimer.Start();
+		}
+		private void ChartRefreshTimer_Tick(object? sender, EventArgs e)
+		{
+            UpdateChart();
+		}
+
+		private void btn_Start_Click(object sender, EventArgs e)
         {
             //await libltkjava.powerON(args, @"Collection\Identification\l.csv");
             currentTimeStamp = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds();
-            //StartReadShow();
-            _isOpen[0] = true;
+			Thread thread = new Thread(StartReadShow)
+			{
+				IsBackground = true
+			};
+			thread.Start();
+			_isOpen[0] = true;
             _threadOne.Set();
         }
 
@@ -110,19 +131,13 @@ namespace RFIDentify.UI
             }
         }
 
-        private int calculateTime()
-        {
-            long nowTimeStamp = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds();
-            return (int)(nowTimeStamp - currentTimeStamp);
-        }
-
         public static bool[] _isOpen = new bool[] { false };
         public async void StartReadShow()
-        {           
-            //this.libltkjava.powerON(args, @"Collection\Identification\l.csv");
-            
+        {
+            //this.libltkjava.powerON(args, @"Collection\Identification\l.csv");            
             //this.libltkjava.startRead();
-            Random random = new Random();
+            long time = ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds();
+			Random random = new Random();
             for (int i = 0; i < 100000; i++)
             {
                 if (!_isOpen[0])
@@ -135,32 +150,15 @@ namespace RFIDentify.UI
                 {
                     RFIDData arg = new RFIDData()
                     {
+                        time = ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds() - time,
                         tag = "val" + j.ToString(),
                         phase = 4096 * random.NextDouble(),
                     };
                     batcher.Add(arg);
                     data.Add(arg);
                 }
-                await Task.Delay(1);
+                await Task.Delay(10);
             }            
-        }
-
-        /// <summary>
-        /// 更新 Chart
-        /// </summary>
-        delegate void UpdateChartCallBack();
-        private void UpdateChart()
-        {
-            if (this.lineChart.InvokeRequired)
-            {
-                UpdateChartCallBack updateChartCallBack = new UpdateChartCallBack(UpdateChart);
-                this.Invoke(updateChartCallBack);
-            }
-            else
-            {
-                //this.lineChart.SetOption(option);
-                this.lineChart.Refresh();
-            }
         }
 
         /// <summary>
@@ -173,23 +171,29 @@ namespace RFIDentify.UI
             {
                 try
                 {
+                    rwLock.EnterWriteLock();
                     foreach (RFIDData data in batch)
                     {
-                        if (!datas.ContainsKey(data.tag!))
+						string tag = data.tag!;						
+						if (!datas.ContainsKey(tag))
                         {
-                            string tag = "val" + (datas.Count + 1);
-                            datas.TryAdd(data.tag!, (tag, 0));
-                            var series = option.AddSeries(new UILineSeries(tag));
-                            series.SetMaxCount(1000);
+							data.tag = "val" + (datas.Count + 1);
+							List<RFIDData> list = new List<RFIDData>();
+                            list.Add(data);
+							datas.TryAdd(tag, list);
+                            var series = option.AddSeries(new UILineSeries(data.tag!));
                             series.Color = colors[datas.Count + 1];
                         }
-                        var tagValue = datas[data.tag!];
-                        tagValue.Item2++;
-                        datas[data.tag!] = tagValue;
-                        data.tag = tagValue.Item1;
-                        this.lineChart.Option.AddData(tagValue.Item1, tagValue.Item2++, DataProcess.Baseline(data).phase);
+						DataProcess.Baseline(data); // 基准化
+						data.tag = datas[tag][0].tag;
+						datas[tag].Add(data);
+                        
+                        // 限制数据量
+                        if (datas[tag].Count >= 10000)
+                        {
+                            datas[tag].RemoveRange(0, datas[tag].Count - 5000);
+                        }
                     }
-                    UpdateChart();
                 }
                 catch (ArgumentException ex)
                 {
@@ -199,9 +203,54 @@ namespace RFIDentify.UI
                 {
                     Console.WriteLine(ex.Message);
                 }
-
+                finally
+                {
+                    rwLock.ExitWriteLock();
+                }
             }
         }
+
+        private void UpdateChart()
+        {
+			if (rwLock.TryEnterReadLock(timeout))
+            {
+				try
+				{
+					foreach (UILineSeries value in option.Series.Values)
+					{
+						value.Clear();
+					}
+                    int maxCount = 0;
+                    double maxTime = MaxMilliSecondRange;
+					foreach (var data in datas)
+					{
+                        int count = data.Value.Count;
+                        maxCount = count > maxCount ? count : maxCount;
+                        int i = (count - 1000 > 0) ? count - 1000 : 0;
+                        for(; i < count; i++)
+                        {
+							option.AddData(data.Value[i].tag, Convert.ToDouble(data.Value[i].time)/1000, data.Value[i].phase);
+						    double temp = Convert.ToDouble(data.Value[i].time);
+                            maxTime = (temp > maxTime ? temp : maxTime)!;
+						}
+					}
+                    option.XAxis.SetRange((maxTime - MaxMilliSecondRange) / 1000, maxTime / 1000);
+					this.lineChart.Refresh();
+				}
+				catch(Exception ex)
+				{
+                    Console.WriteLine(ex.Message);
+				}
+				finally
+				{
+					rwLock.ExitReadLock();
+				}
+            }
+            else
+            {
+                UpdateChart();
+            } 
+		}
 
         /// <summary>
         /// 更新队列值

@@ -8,6 +8,7 @@ using System.Data.SqlTypes;
 using System.Globalization;
 using System.Security.Policy;
 using static ScottPlot.Generate;
+using DateTime = System.DateTime;
 
 namespace RFIDentify.Com
 {
@@ -24,16 +25,6 @@ namespace RFIDentify.Com
                 return;
             }
             BaseStand = new Dictionary<string, double[]>();
-            //using (var reader = new StreamReader(basePath + baseStandPath))
-            //{
-            //    using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
-            //    {
-            //        while (csv.Read())
-            //        {
-            //            var record = csv.GetRecord<double[]>();
-            //        }
-            //    }
-            //}
             DataTable dt = CSVHelper.ReadCSV(basePath + baseStandPath, IndexColumn : 1);
             
             foreach(DataColumn dc in dt.Columns)
@@ -75,7 +66,7 @@ namespace RFIDentify.Com
         }
 
         //处理时间戳
-        public static long ProcessTimestamp(string time)
+        public static long String2Timestamp(string time)
         {
             time = time.Replace("+08:00", "").Replace(":", " ").Replace("T", " ").Replace("Z", "").Replace(".", " ");
 

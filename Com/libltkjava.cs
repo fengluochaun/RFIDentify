@@ -990,6 +990,7 @@ namespace RFIDentify.Com
         public long? time { get; set; }
         public string? tag { get; set; }
         public double phase { get; set; }
+        public double processedPhase { get; set; }
         public int channel { get; set; }
         public double RSSI { get; set; }
     }
