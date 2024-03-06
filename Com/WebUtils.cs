@@ -41,7 +41,7 @@ namespace RFIDentify.Com
                         {
                             var responseContent = await response.Content.ReadAsStringAsync();
                             result = JsonConvert.DeserializeObject<ApiResponse>(responseContent);
-                            return result;
+                            return result!;
                         }
                         return result;
                     }
@@ -52,19 +52,19 @@ namespace RFIDentify.Com
                     {
                         var responseContent = await response.Content.ReadAsStringAsync();
                         result = JsonConvert.DeserializeObject<ApiResponse>(responseContent);
-                        return result;
+                        return result!;
                     }
                 }
                 else if (type.ToLower() == "post")
                 {
                     var content = new FormUrlEncodedContent(dics);
-
-                    HttpResponseMessage response = client.PostAsync(api, content).Result;
+					content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+					HttpResponseMessage response = client.PostAsync(api, content).Result;
                     if (response.IsSuccessStatusCode)
                     {
                         var responseContent = await response.Content.ReadAsStringAsync();
                         result = JsonConvert.DeserializeObject<ApiResponse>(responseContent);
-                        return result;
+                        return result!;
                     }
                 }
                 else if (type.ToLower() == "get")
@@ -75,10 +75,21 @@ namespace RFIDentify.Com
                     {
                         var responseContent = await response.Content.ReadAsStringAsync();
                         result = JsonConvert.DeserializeObject<ApiResponse>(responseContent);
-                        return result;
+                        return result!;
                     }
                 }
-                else
+				else if (type.ToLower() == "delete")
+				{
+					HttpResponseMessage response = client.DeleteAsync(api).Result;
+
+					if (response.IsSuccessStatusCode)
+					{
+						var responseContent = await response.Content.ReadAsStringAsync();
+						result = JsonConvert.DeserializeObject<ApiResponse>(responseContent);
+						return result!;
+					}
+				}
+				else
                 {
                     return result;
                 }
@@ -99,8 +110,8 @@ namespace RFIDentify.Com
     // 用于反序列化 API 响应的类
     public class ApiResponse
     {
-        public string Status { get; set; }
-        public string Message { get; set; }
+        public string? Status { get; set; }
+        public string? Message { get; set; }
         public int Result { get; set; }
     }
 }

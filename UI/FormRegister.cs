@@ -14,6 +14,7 @@ using java.security;
 using Newtonsoft.Json;
 using org.apache.log4j;
 using org.jdom;
+using RFIDentify.Com;
 using RFIDentify.DAO;
 using RFIDentify.Models;
 using RFIDentify.Models.Dto;
@@ -43,8 +44,11 @@ namespace RFIDentify.UI
             set => collectionSum = value;
         }
         public FormMain _parent;
-        #endregion
-        public FormRegister(FormMain formMain)
+
+		public readonly HttpHelper ChttpHelper = new();
+		public readonly HttpHelper PhttpHelper = new("http://127.0.0.1:5000/");
+		#endregion
+		public FormRegister(FormMain formMain)
         {
             InitializeComponent();
             var id = userDao.GetUserNum().Result + 1;

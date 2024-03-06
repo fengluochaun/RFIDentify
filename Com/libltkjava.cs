@@ -704,10 +704,6 @@ namespace RFIDentify.Com
         /// 委托
         /// </summary>
         public delegate void UpdateDataHandler(List<RFIDData> args);
-
-
-
-
         /// <summary>
         /// 事件
         /// </summary>
