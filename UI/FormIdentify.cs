@@ -1,41 +1,25 @@
-﻿using RFIDentify.Com;
-using CsvHelper;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using org.llrp.ltk.types;
-using System.Globalization;
-using ScottPlot;
+﻿#define SIMULATION
+
+using RFIDentify.Com;
 using Sunny.UI;
 using System.Collections.Concurrent;
-using javax.xml.crypto;
-using com.sun.org.apache.bcel.@internal.generic;
 using Timer = System.Windows.Forms.Timer;
-using javax.management;
-
 
 namespace RFIDentify.UI
 {
 	public partial class FormIdentify : UIPage
 	{
-		private FormMain _parent;
-		public readonly int MaxMilliSecondRange = 6000;
-		public readonly HttpHelper ChttpHelper = new();
-		public readonly HttpHelper PhttpHelper = new("http://127.0.0.1:5000/");
+		private FormMain parent;
 
-		private int timeout = 10000;
+		private readonly HttpHelper ChttpHelper = new();
+		private readonly HttpHelper PhttpHelper = new("http://127.0.0.1:5000/");
+		
 		private static readonly ReaderWriterLockSlim rwLock = new ReaderWriterLockSlim();
 		private static ConcurrentDictionary<string, List<RFIDData>> datas = new ConcurrentDictionary<string, List<RFIDData>>();
 
-		private libltkjava libltkjava = new libltkjava();
+		private libltkjava libltkjava = new();
 		public Batcher<RFIDData> batcher;
-		private string args = "Speedwayr-11-25-ab.local";//读写器连接路径
+		
 		private UILineOption option = new();
 		private Color[] colors =
 		{
@@ -49,31 +33,42 @@ namespace RFIDentify.UI
 			Color.LightPink
 		};
 		private Timer chartRefreshTimer;
-
-		private static ManualResetEvent _threadOne = new ManualResetEvent(false);
-
-		private bool threadStart = false;
 		private Thread threadRead;
-		
+
+		private readonly int MaxMilliSecondRange = 6000;
+		private readonly int timeout = 10000;
+
+		private readonly string basePath = AppDomain.CurrentDomain.BaseDirectory;
+		private readonly string IdentificationPath = "CollectionData/Identification/temp.csv";//识别数据存储路径
+		private readonly string baseStandPath = "CollectionData/Base/baseStand.csv";
+#if SIMULATION
+		private static ManualResetEvent _threadOne = new ManualResetEvent(false);
+		public static bool[] _isOpen = new bool[] { false };
+#else
+		private readonly string readerPath = "Speedwayr-11-25-ab.local";//读写器连接路径
+#endif
 		public FormIdentify(FormMain parent)
 		{
 			InitializeComponent();
-			libltkjava.UpdateData += UpdateQueueValue;
+			this.parent = parent;
+#if !SIMULATION
+			libltkjava.ReadData += ReadDataFromEqu;
+			libltkjava.powerON(readerPath, IdentificationPath);
+#endif
 			batcher = new Batcher<RFIDData>(
-				processor: this.Process,
+				processor: Process,
 				batchSize: 20,
 				interval: TimeSpan.FromSeconds(5)
 				);
-			this._parent = parent;
+			
+			// 初始化 Chart
 			option.ToolTip.Visible = true;
 			option.Title = new UITitle();
 			option.Title.Text = "RFID";
 			option.Title.SubText = "PhaseLineChart";
-			//option.XAxisType = UIAxisType.DateTime;
-			//option.XAxis.AxisLabel.DateTimeFormat = "mm:ss";
-			this.lineChart.SetOption(option);
+			lineChart.SetOption(option);
 
-			threadRead  = new Thread(StartReadShow)
+			threadRead  = new Thread(StartRead)
 			{
 				IsBackground = true
 			};
@@ -86,68 +81,9 @@ namespace RFIDentify.UI
 			// 启动定时器
 			chartRefreshTimer.Start();
 		}
-		private void ChartRefreshTimer_Tick(object? sender, EventArgs e)
+		private async void StartRead()
 		{
-			UpdateChart();
-		}
-
-		private void btn_Start_Click(object sender, EventArgs e)
-		{
-			//await libltkjava.powerON(args, @"Collection\Identification\l.csv");
-
-			if (!threadStart)
-			{
-				threadRead.Start();
-				threadStart = true;
-			}
-			_isOpen[0] = true;
-			_threadOne.Set();
-		}
-
-		private void btn_Stop_Click(object sender, EventArgs e)
-		{
-			//libltkjava.PowerOFF();
-			string filepath = @"D:\feng\Documents\Tencent\1744665475\FileRecv\实验代码\test\RFIDentify_Backend\ss\l.csv";
-			_isOpen[0] = false;
-			var o = new
-			{
-				file = filepath,
-				basefile = filepath
-			};
-			Task task = new Task(async () =>
-			{
-				
-				var result = await PhttpHelper.PostAsync<object>("User/UserRecognition", o);
-				MethodInvoker mi = new MethodInvoker(() =>
-				{					
-					this.lbl_Identification.Text = "识别对象：" + result.ToString();
-				});
-				this.BeginInvoke(mi);
-			});
-			task.Start();
-		}
-
-		private void btn_AddUser_Click(object sender, EventArgs e)
-		{
-			_parent.formRegister.UpdateByUserId();
-			_parent.SelectPage(1002);
-		}
-
-		private void lbl_Identifcation_Click(object sender, EventArgs e)
-		{
-			int id;
-			if (int.TryParse((lbl_Identification.Text.SplitLast("：")), out id))
-			{
-				_parent.formRegister.UpdateByUserId(id);
-				_parent.SelectPage(1002);
-			}
-		}
-
-		public static bool[] _isOpen = new bool[] { false };
-		public async void StartReadShow()
-		{
-			//this.libltkjava.powerON(args, @"Collection\Identification\l.csv");            
-			//this.libltkjava.startRead();
+#if SIMULATION
 			long time = ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds();
 			Random random = new Random();
 			for (int i = 0; i < 100000; i++)
@@ -162,15 +98,18 @@ namespace RFIDentify.UI
 				{
 					RFIDData arg = new RFIDData()
 					{
-						time = ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds() - time,
-						tag = "val" + j.ToString(),
-						phase = 4096 * random.NextDouble(),
+						Time = ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds() - time,
+						Tag = "val" + j.ToString(),
+						Phase = 4096 * random.NextDouble(),
 					};
 					batcher.Add(arg);
 					data.Add(arg);
 				}
 				await Task.Delay(10);
 			}
+#else
+			this.libltkjava.startRead(null);
+#endif
 		}
 
 		/// <summary>
@@ -186,18 +125,18 @@ namespace RFIDentify.UI
 					rwLock.EnterWriteLock();
 					foreach (RFIDData data in batch)
 					{
-						string tag = data.tag!;
+						string tag = data.Tag!;
 						if (!datas.ContainsKey(tag))
 						{
-							data.tag = "val" + (datas.Count + 1);
+							data.Tag = "val" + (datas.Count + 1);
 							List<RFIDData> list = new List<RFIDData>();
 							list.Add(data);
 							datas.TryAdd(tag, list);
-							var series = option.AddSeries(new UILineSeries(data.tag!));
+							var series = option.AddSeries(new UILineSeries(data.Tag!));
 							series.Color = colors[datas.Count + 1];
 						}
-						DataProcess.Baseline(data); // 基准化
-						data.tag = datas[tag][0].tag;
+						//DataProcess.Baseline(data); // 基准化
+						data.Tag = datas[tag][0].Tag;
 						datas[tag].Add(data);
 
 						// 限制数据量
@@ -241,8 +180,8 @@ namespace RFIDentify.UI
 						int i = (count - 1000 > 0) ? count - 1000 : 0;
 						for (; i < count; i++)
 						{
-							option.AddData(data.Value[i].tag, Convert.ToDouble(data.Value[i].time) / 1000, data.Value[i].phase);
-							double temp = Convert.ToDouble(data.Value[i].time);
+							option.AddData(data.Value[i].Tag, Convert.ToDouble(data.Value[i].Time) / 1000, data.Value[i].Phase);
+							double temp = Convert.ToDouble(data.Value[i].Time);
 							maxTime = (temp > maxTime ? temp : maxTime)!;
 						}
 					}
@@ -265,15 +204,72 @@ namespace RFIDentify.UI
 		}
 
 		/// <summary>
-		/// 更新队列值
+		/// 读取设备数据
 		/// </summary>
 		/// <param name="args"></param>
-		private void UpdateQueueValue(List<RFIDData> args)
+		private void ReadDataFromEqu(List<RFIDData> datas)
 		{
-			if (args.Count == 0) return;
-			foreach (var arg in args)
+			if (datas.Count == 0) return;
+			foreach (var arg in datas)
 			{
 				batcher.Add(arg);
+			}
+		}
+
+		private void ChartRefreshTimer_Tick(object? sender, EventArgs e)
+		{
+			UpdateChart();
+		}
+
+		private void btn_Start_Click(object sender, EventArgs e)
+		{
+			if ((threadRead.ThreadState & ThreadState.Unstarted) == ThreadState.Unstarted)
+			{
+				threadRead.Start();
+			}
+#if SIMULATION
+			_isOpen[0] = true;
+			_threadOne.Set();
+#endif
+		}
+
+		private void btn_Stop_Click(object sender, EventArgs e)
+		{
+#if SIMULATION
+			_isOpen[0] = false;
+#else
+			libltkjava.stop();
+#endif
+			// 上传识别数据
+			var o = new
+			{
+				file = basePath + IdentificationPath,
+				basefile = basePath + baseStandPath
+			};
+			Task task = new(async () =>
+			{
+				var result = await PhttpHelper.PostAsync<object>("User/UserRecognition", o);
+				MethodInvoker mi = new MethodInvoker(() =>
+				{
+					this.lbl_Identification.Text = "识别对象：" + result.ToString();
+				});
+				this.BeginInvoke(mi);
+			});
+			task.Start();
+		}
+
+		private void btn_AddUser_Click(object sender, EventArgs e)
+		{
+			parent.formRegister.UpdateByUserId();
+			parent.SelectPage(1002);
+		}
+
+		private void lbl_Identifcation_Click(object sender, EventArgs e)
+		{
+			if (int.TryParse((lbl_Identification.Text.SplitLast("：")), out int id))
+			{
+				parent.formRegister.UpdateByUserId(id);
+				parent.SelectPage(1002);
 			}
 		}
 	}

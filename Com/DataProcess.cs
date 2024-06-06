@@ -1,6 +1,8 @@
-﻿using CsvHelper;
+﻿using com.sun.corba.se.spi.orb;
+using CsvHelper;
 using java.lang;
 using org.llrp.ltk.types;
+using ScottPlot;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -14,10 +16,19 @@ namespace RFIDentify.Com
 {
     public class DataProcess
     {
-        public const int ChannelSize = 50;
-        public static Dictionary<string, double[]>? BaseStand;
-        public static string basePath = System.AppDomain.CurrentDomain.BaseDirectory;
-        public static string baseStandPath = "CollectionData/Base/baseStand.csv";
+        private const int ChannelSize = 50;
+        private static Dictionary<string, double[]>? BaseStand;
+        private static string[] tags =
+            {
+                "",
+                "E2000016811401862090C0A0",
+                "E2000016811401862090C0A1",
+				"E2000016811401862090C0A2",
+				"E2000016811401862090C0A3",
+				"E2000016811401862090C0A4"
+            }; // 记录所有的标签
+        private static string basePath = System.AppDomain.CurrentDomain.BaseDirectory;
+        private static string baseStandPath = "CollectionData/Base/baseStand.csv";
         public static void ReadBasePhase()
         {
             if (BaseStand != null)
@@ -29,19 +40,21 @@ namespace RFIDentify.Com
 
             foreach (DataColumn dc in dt.Columns)
             {
-                BaseStand.Add(dc.ColumnName.ToString(), new double[ChannelSize]);
-            }
-            for (int i = 1; i < dt.Rows.Count; i++) {
-                foreach (KeyValuePair<string, double[]> kvp in BaseStand)
+                int idx = Convert.ToInt32(dc.ColumnName);
+                double[] values = new double[ChannelSize];
+                for (int i = 1; i < dt.Rows.Count; i++)
                 {
-                    BaseStand[kvp.Key][i - 1] = Convert.ToDouble(dt.Rows[i][kvp.Key]);
+                    values[i - 1] = Convert.ToDouble(dt.Rows[i][dc.ColumnName]);
                 }
+                BaseStand.Add(tags[idx], values);
             }
         }
         public static RFIDData Baseline(RFIDData data)
         {
             if (BaseStand == null) ReadBasePhase();
-            data.phase = Baseline(data.phase, data.channel, data.tag);
+            data.Phase = Baseline(data.Phase, data.Channel, data.Tag);
+            int index = Array.IndexOf(tags, data.Tag);
+			data.Index = index == -1 ? null : index;
             return data;
         }
 
@@ -60,7 +73,7 @@ namespace RFIDentify.Com
         public static List<RFIDData> Baseline(ref List<RFIDData> datas) {
             foreach (RFIDData data in datas)
             {
-                data.phase = Baseline(data.phase, data.channel, data.tag);
+                data.Phase = Baseline(data.Phase, data.Channel, data.Tag);
             }
             return datas;
         }
@@ -77,7 +90,7 @@ namespace RFIDentify.Com
             return t / 1000000;
         }
         
-        public static void SaveFormatDataToCSVByTag(List<RFIDData> datas, Guid guid)
+        public static void SaveFormatDataToCSVByTag(List<RFIDData> datas)
         {
 			DataTable dt = new DataTable();
 			dt.Columns.Add("Time", typeof(string));
@@ -87,10 +100,10 @@ namespace RFIDentify.Com
 			foreach (RFIDData data in datas)
             {
 				DataRow dr = dt.NewRow();
-                dr["Time"] = data.time;
-                dr["Tag"] = data.tag;
-                dr["Phase"] = data.phase;
-                dr["Channel"] = data.channel;
+                dr["Time"] = data.Time;
+                dr["Tag"] = data.Tag;
+                dr["Phase"] = data.Phase;
+                dr["Channel"] = data.Channel;
 				dt.Rows.Add(dr);
 			}
 			//CSVHelper.SaveCSV(dt, path);

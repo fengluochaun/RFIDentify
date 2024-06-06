@@ -3,6 +3,7 @@ using java.io;
 using java.lang;
 using java.nio.charset;
 using java.util;
+using jdk.nashorn.@internal.ir;
 using org.apache.log4j;
 using org.jdom;
 using org.jdom.input;
@@ -17,6 +18,7 @@ using org.llrp.ltk.generated.parameters;
 using org.llrp.ltk.net;
 using org.llrp.ltk.types;
 using org.llrp.ltk.util;
+using sun.swing;
 using System.Globalization;
 
 namespace RFIDentify.Com
@@ -25,10 +27,10 @@ namespace RFIDentify.Com
     {
         #region 变量
         private LLRPConnection connection;
+        public static string? WriteCsvFilePath { get; set; }
+		private readonly string basePath = AppDomain.CurrentDomain.BaseDirectory;
 
-        public static string? WRITE_CSV_FILE_PATH;
-
-        static Logger logger = Logger.getLogger("org.impinj.llrp.ltk.examples.docsample4");
+		static Logger logger = Logger.getLogger("org.impinj.llrp.ltk.examples.docsample4");
         private ROSpec rospec;
         private int MessageID = 23; // a random starting point
         private UnsignedInteger modelName;
@@ -596,7 +598,7 @@ namespace RFIDentify.Com
             }
         }
 
-        private void stop()
+        public void stop()
         {
             LLRPMessage response;
             try
@@ -703,11 +705,11 @@ namespace RFIDentify.Com
         /// <summary>
         /// 委托
         /// </summary>
-        public delegate void UpdateDataHandler(List<RFIDData> args);
+        public delegate void ReadDataHandler(List<RFIDData> args);
         /// <summary>
         /// 事件
         /// </summary>
-        public event UpdateDataHandler UpdateData;
+        public event ReadDataHandler ReadData;
         #endregion
         private void logOneTagReport(TagReportData tr)
         {
@@ -824,14 +826,15 @@ namespace RFIDentify.Com
 
             try
             {                              
-                RFIDData arg = new RFIDData();
-                //arg.time = DataProcess.ProcessTimestamp(currentReadTime.toBigInteger().toString());
-                arg.time = Convert.ToInt64(currentReadTime.toBigInteger().toString());
-                arg.tag = ename;
-                arg.phase = currentRfPhase;
+                RFIDData arg = new();
+                arg.Time = Convert.ToInt64(currentReadTime.toBigInteger());
+                arg.Tag = ename;
+                arg.Phase = currentRfPhase;
                 arg.RSSI = currentPeakRSSI;
-                arg.channel = Convert.ToInt32(currentChannelIndex.toInteger().toString());
-                using (var writer = new StreamWriter(System.IO.File.Open(WRITE_CSV_FILE_PATH!, FileMode.Append)))
+                arg.Channel = Convert.ToInt32(currentChannelIndex.toInteger().toString());
+                DataProcess.Baseline(arg);
+                // 优化为全局变量
+                using (var writer = new StreamWriter(System.IO.File.Open(WriteCsvFilePath!, FileMode.Append)))
                 {
                     using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
                     {
@@ -839,7 +842,7 @@ namespace RFIDentify.Com
                         csv.NextRecord();
                     }
                 }
-                UpdateData(new List<RFIDData>() { arg });
+                ReadData(new List<RFIDData>() { arg });
                 epcname = ename;
             }
             catch (java.lang.Exception e)
@@ -893,31 +896,30 @@ namespace RFIDentify.Com
         }
 
 
-        public static string fileName;//公共变量文件名
-        public static string filePath = System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase!;//公共变量CSV文件路径
         //开机
         public void powerON(string args, string fileName)
         {
             BasicConfigurator.configure();
-            java.io.File csvFile = null;
-            try
-            {
-                csvFile = new java.io.File(filePath + java.io.File.separator + fileName);
-                java.io.File parent = csvFile.getParentFile();
-                if (parent != null && !parent.exists())
-                {
-                    parent.mkdirs();
-                }
-                csvFile.createNewFile();
-            }
-            catch (java.io.IOException e)
-            {
-                e.printStackTrace();
-            }
+			FileInfo csvFile;
+			try
+			{
+				csvFile = new FileInfo(Path.Combine(basePath, fileName));
+				DirectoryInfo parent = csvFile.Directory!;
+				if (parent != null && !parent.Exists)
+				{
+					parent.Create();
+				}
+				csvFile.Create();
+			}
+			catch (System.IO.IOException e)
+			{
+				System.Console.WriteLine(e.ToString());
+			}
+			WriteCsvFilePath = Path.Combine(basePath, fileName);
 
-            // Only show root events from the base logger
-            Logger.getRootLogger().setLevel(Level.ERROR);
-            WRITE_CSV_FILE_PATH = filePath + fileName;
+			// Only show root events from the base logger
+			Logger.getRootLogger().setLevel(Level.ERROR);
+			
             //csvWriter = new CsvWriter(WRITE_CSV_FILE_PATH, ',', Charset.forName("GBK"));
             //DocSample4 example = new DocSample4();
             logger.setLevel(Level.INFO);
@@ -928,38 +930,29 @@ namespace RFIDentify.Com
         {
             stop();
             disconnect();
-            //csvWriter.close();
         }
         //开始读
-        public async void startRead()
+        public void startRead(string? filepath)
         {
-            enableImpinjExtensions();
-            factoryDefault();
-            getReaderCapabilities();
-            getReaderConfiguration();
-            setReaderConfiguration();
-            addRoSpec(true);
-            enable();
-            start();
-            try
+            if (!string.IsNullOrEmpty(filepath))
             {
-                java.lang.Thread.sleep(60000);
-            }
-            catch (InterruptedException)
-            {
-                logger.error("Sleep Interrupted");
-            }
-        }
-
-        //暂停
-        public void zanting()
-        {
-            stop();
-        }
-
-        //重新开始读
-        public void continueRead()
-        {
+				FileInfo csvFile;
+				try
+				{
+					csvFile = new FileInfo(filepath);
+					DirectoryInfo parent = csvFile.Directory!;
+					if (parent != null && !parent.Exists)
+					{
+						parent.Create();
+					}
+                    csvFile.Create();
+				}
+				catch (System.IO.IOException e)
+				{
+                    System.Console.WriteLine(e.ToString());
+				}
+                WriteCsvFilePath = filepath;
+			}
             enableImpinjExtensions();
             factoryDefault();
             getReaderCapabilities();
@@ -983,11 +976,12 @@ namespace RFIDentify.Com
     /// </summary>
     public class RFIDData : EventArgs
     {
-        public long? time { get; set; }
-        public string? tag { get; set; }
-        public double phase { get; set; }
-        public double processedPhase { get; set; }
-        public int channel { get; set; }
+        public int? Index { get; set; } = null;
+        public long? Time { get; set; }
+        public string? Tag { get; set; }
+        public double Phase { get; set; }
+        public double? ProcessedPhase { get; set; } = null;
+        public int Channel { get; set; }
         public double RSSI { get; set; }
     }
 }

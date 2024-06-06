@@ -56,7 +56,7 @@ namespace RFIDentify.UI
 
         public void Initial()
         {
-            libltkjava.UpdateData += UpdateQueueValue;
+            libltkjava.ReadData += UpdateQueueValue;
             batcher = new Batcher<RFIDData>(
                 processor: this.Process,
                 batchSize: 20,
@@ -112,8 +112,8 @@ namespace RFIDentify.UI
                     {
                         RFIDData arg = new RFIDData()
                         {
-                            tag = "val" + j.ToString(),
-                            phase = 4096 * random.NextDouble(),
+                            Tag = "val" + j.ToString(),
+                            Phase = 4096 * random.NextDouble(),
                         };
                         batcher!.Add(arg);
                         data.Add(arg);
@@ -157,19 +157,19 @@ namespace RFIDentify.UI
                 {
                     foreach (RFIDData data in batch)
                     {
-                        if (!datas.ContainsKey(data.tag!))
+                        if (!datas.ContainsKey(data.Tag!))
                         {
                             string tag = "val" + (datas.Count + 1);
-                            datas.TryAdd(data.tag!, (tag, 0));
+                            datas.TryAdd(data.Tag!, (tag, 0));
                             var series = option.AddSeries(new UILineSeries(tag));
                             series.SetMaxCount(1000);
                             series.Color = colors[datas.Count + 1];
                         }
-                        var tagValue = datas[data.tag!];
+                        var tagValue = datas[data.Tag!];
                         tagValue.Item2++;
-                        datas[data.tag!] = tagValue;
-                        data.tag = tagValue.Item1;
-                        this.lineChart.Option.AddData(tagValue.Item1, tagValue.Item2++, DataProcess.Baseline(data).phase);
+                        datas[data.Tag!] = tagValue;
+                        data.Tag = tagValue.Item1;
+                        this.lineChart.Option.AddData(tagValue.Item1, tagValue.Item2++, DataProcess.Baseline(data).Phase);
                     }
                     UpdateChart();
                 }
