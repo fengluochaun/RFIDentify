@@ -1,4 +1,4 @@
-﻿#define SIMULATION
+﻿//#define SIMULATION
 
 using RFIDentify.Com;
 using Sunny.UI;
@@ -39,8 +39,8 @@ namespace RFIDentify.UI
 		private readonly int timeout = 10000;
 
 		private readonly string basePath = AppDomain.CurrentDomain.BaseDirectory;
-		private readonly string IdentificationPath = "CollectionData/Identification/temp.csv";//识别数据存储路径
-		private readonly string baseStandPath = "CollectionData/Base/baseStand.csv";
+		private readonly string IdentificationPath_ = "CollectionData/Identification/temp.csv";//识别数据存储路径
+		private readonly string baseStandPath_ = "CollectionData/Base/baseStand.csv";
 #if SIMULATION
 		private static ManualResetEvent _threadOne = new ManualResetEvent(false);
 		public static bool[] _isOpen = new bool[] { false };
@@ -53,7 +53,7 @@ namespace RFIDentify.UI
 			this.parent = parent;
 #if !SIMULATION
 			libltkjava.ReadData += ReadDataFromEqu;
-			libltkjava.powerON(readerPath, IdentificationPath);
+			libltkjava.powerON(readerPath, IdentificationPath_);
 #endif
 			batcher = new Batcher<RFIDData>(
 				processor: Process,
@@ -78,8 +78,6 @@ namespace RFIDentify.UI
 			chartRefreshTimer.Interval = 50; // 设置定时器间隔，单位为毫秒（这里设置为5秒）
 			chartRefreshTimer.Tick += ChartRefreshTimer_Tick;
 
-			// 启动定时器
-			chartRefreshTimer.Start();
 		}
 		private async void StartRead()
 		{
@@ -227,6 +225,8 @@ namespace RFIDentify.UI
 			{
 				threadRead.Start();
 			}
+			// 启动定时器
+			chartRefreshTimer.Start();
 #if SIMULATION
 			_isOpen[0] = true;
 			_threadOne.Set();
@@ -243,8 +243,8 @@ namespace RFIDentify.UI
 			// 上传识别数据
 			var o = new
 			{
-				file = basePath + IdentificationPath,
-				basefile = basePath + baseStandPath
+				filePath = basePath + IdentificationPath_,
+				baseStandPath = basePath + baseStandPath_
 			};
 			Task task = new(async () =>
 			{

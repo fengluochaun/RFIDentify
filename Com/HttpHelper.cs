@@ -98,8 +98,8 @@ namespace RFIDentify.Com
 				if (res.StatusCode == System.Net.HttpStatusCode.OK || res.StatusCode == System.Net.HttpStatusCode.Created)
 				{
 					string resMsgStr = await res.Content.ReadAsStringAsync();
-					var result = JsonConvert.DeserializeObject<TResult>(resMsgStr);
-					return result != null ? result! : default!;
+					var result = JsonConvert.DeserializeObject<ResultDto<TResult>>(resMsgStr);
+					return result != null ? result.Result! : default!;
 				}
 				else
 				{
@@ -125,7 +125,7 @@ namespace RFIDentify.Com
 			{
 				var resMsgStr = await client!.GetStringAsync(url);
 				var result = JsonConvert.DeserializeObject<ResultDto<TResult>>(resMsgStr);
-				return result != null ? result.Data! : default!;
+				return result != null ? result.Result! : default!;
 			}
 			catch (Exception ex)
 			{
@@ -139,7 +139,7 @@ namespace RFIDentify.Com
 			{
 				var resMsgStr = await client!.DeleteAsync(url);
 				var result = JsonConvert.DeserializeObject<ResultDto<TResult>>(resMsgStr.ToString());
-				return result != null ? result.Data! : default!;
+				return result != null ? result.Result! : default!;
 			}
 			catch (Exception ex)
 			{
@@ -159,7 +159,7 @@ namespace RFIDentify.Com
 				{
 					string resMsgStr = await res.Content.ReadAsStringAsync();
 					var result = JsonConvert.DeserializeObject<ResultDto<TResult>>(resMsgStr);
-					return result != null ? result.Data! : default!;
+					return result != null ? result.Result! : default!;
 				}
 				else
 				{
@@ -176,8 +176,9 @@ namespace RFIDentify.Com
 	}
 	public class ResultDto<TResult>
 	{
-		public string? Msg { get; set; }
-		public TResult? Data { get; set; }
-		public bool? Success { get; set; }
+		public string? Status { get; set; }
+		public string? Message { get; set; }
+		public TResult? Result { get; set; }
+
 	}
 }

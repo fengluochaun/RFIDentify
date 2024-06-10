@@ -66,6 +66,7 @@ namespace RFIDentify.UI
             _parent = formMain;
             this.listBox.DataSource = userCSVPaths;
         }
+
         #region 初始化或更新UI
         public void UpdateByUserId(int userId)
         {

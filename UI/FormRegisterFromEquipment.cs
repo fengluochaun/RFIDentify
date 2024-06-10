@@ -43,7 +43,7 @@ namespace RFIDentify.UI
         {
             InitializeComponent();
             Initial();
-            _parent = parent;
+            _parent = parent!;
         }
         public FormRegisterFromEquipment(FormMain? parent, FormRegister formRegister)
         {
@@ -51,7 +51,7 @@ namespace RFIDentify.UI
             _formRegister = formRegister;
             lbl_Id.Text = "编号：" + formRegister.user!.Id.ToString();
             Initial();
-            _parent = parent;
+            _parent = parent!;
         }
 
         public void Initial()

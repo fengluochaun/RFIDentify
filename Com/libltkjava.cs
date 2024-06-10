@@ -1,4 +1,5 @@
-﻿using CsvHelper;
+﻿using com.sun.org.apache.xpath.@internal;
+using CsvHelper;
 using java.io;
 using java.lang;
 using java.nio.charset;
@@ -20,13 +21,16 @@ using org.llrp.ltk.types;
 using org.llrp.ltk.util;
 using sun.swing;
 using System.Globalization;
+using System.Numerics;
 
 namespace RFIDentify.Com
 {
     public class libltkjava : LLRPEndpoint
     {
-        #region 变量
-        private LLRPConnection connection;
+        private bool begin = false;
+        private long beginTime = ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds();
+		#region 变量
+		private LLRPConnection connection;
         public static string? WriteCsvFilePath { get; set; }
 		private readonly string basePath = AppDomain.CurrentDomain.BaseDirectory;
 
@@ -827,12 +831,18 @@ namespace RFIDentify.Com
             try
             {                              
                 RFIDData arg = new();
-                arg.Time = Convert.ToInt64(currentReadTime.toBigInteger());
+                java.math.BigInteger s = currentReadTime.toBigInteger();
+                if (!begin)
+                {
+                    beginTime = Convert.ToInt64(s.toString()) / 1000;
+                    begin = true;
+				}
+				arg.Time = Convert.ToInt64(s.toString()) / 1000 - beginTime;
                 arg.Tag = ename;
                 arg.Phase = currentRfPhase;
                 arg.RSSI = currentPeakRSSI;
                 arg.Channel = Convert.ToInt32(currentChannelIndex.toInteger().toString());
-                DataProcess.Baseline(arg);
+                //DataProcess.Baseline(arg);
                 // 优化为全局变量
                 using (var writer = new StreamWriter(System.IO.File.Open(WriteCsvFilePath!, FileMode.Append)))
                 {
@@ -909,7 +919,14 @@ namespace RFIDentify.Com
 				{
 					parent.Create();
 				}
-				csvFile.Create();
+                if (!System.IO.File.Exists(csvFile.FullName))
+                {
+					using (csvFile.Create()) { }
+					using var writer = new StreamWriter(System.IO.File.Open(csvFile.FullName!, FileMode.Append));
+					using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+					csv.WriteHeader<RFIDData>();
+					csv.NextRecord();
+				}				
 			}
 			catch (System.IO.IOException e)
 			{
@@ -983,5 +1000,10 @@ namespace RFIDentify.Com
         public double? ProcessedPhase { get; set; } = null;
         public int Channel { get; set; }
         public double RSSI { get; set; }
+    }
+
+    public class CSVRFIDData
+    {
+        
     }
 }

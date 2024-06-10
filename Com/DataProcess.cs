@@ -1,6 +1,7 @@
 ﻿using com.sun.corba.se.spi.orb;
 using CsvHelper;
 using java.lang;
+using java.nio.file;
 using org.llrp.ltk.types;
 using ScottPlot;
 using System;
@@ -18,7 +19,7 @@ namespace RFIDentify.Com
     {
         private const int ChannelSize = 50;
         private static Dictionary<string, double[]>? BaseStand;
-        private static string[] tags =
+        private static List<string> tags = new()
             {
                 "",
                 "E2000016811401862090C0A0",
@@ -27,8 +28,10 @@ namespace RFIDentify.Com
 				"E2000016811401862090C0A3",
 				"E2000016811401862090C0A4"
             }; // 记录所有的标签
+        public static List<string> Tags { get => tags; }
         private static string basePath = System.AppDomain.CurrentDomain.BaseDirectory;
         private static string baseStandPath = "CollectionData/Base/baseStand.csv";
+        public static long BeginTime { get; set; }
         public static void ReadBasePhase()
         {
             if (BaseStand != null)
@@ -53,7 +56,7 @@ namespace RFIDentify.Com
         {
             if (BaseStand == null) ReadBasePhase();
             data.Phase = Baseline(data.Phase, data.Channel, data.Tag);
-            int index = Array.IndexOf(tags, data.Tag);
+            int index = tags.IndexOf(data.Tag!);
 			data.Index = index == -1 ? null : index;
             return data;
         }
