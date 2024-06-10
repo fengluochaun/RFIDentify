@@ -709,7 +709,7 @@ namespace RFIDentify.Com
         /// <summary>
         /// 委托
         /// </summary>
-        public delegate void ReadDataHandler(List<RFIDData> args);
+        public delegate void ReadDataHandler(RFIDData args);
         /// <summary>
         /// 事件
         /// </summary>
@@ -852,7 +852,7 @@ namespace RFIDentify.Com
                         csv.NextRecord();
                     }
                 }
-                ReadData(new List<RFIDData>() { arg });
+                ReadData(arg);
                 epcname = ename;
             }
             catch (java.lang.Exception e)

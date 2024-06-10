@@ -189,13 +189,9 @@ namespace RFIDentify.UI
         /// 更新队列值
         /// </summary>
         /// <param name="args"></param>
-        private void UpdateQueueValue(List<RFIDData> args)
+        private void UpdateQueueValue(RFIDData args)
         {
-            if (args.Count == 0) return;
-            foreach (var arg in args)
-            {
-                batcher!.Add(arg);
-            }
+            batcher!.Add(args);
         }
     }
 }

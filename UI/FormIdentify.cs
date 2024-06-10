@@ -1,4 +1,4 @@
-﻿//#define SIMULATION
+﻿#define SIMULATION
 
 using RFIDentify.Com;
 using Sunny.UI;
@@ -205,13 +205,9 @@ namespace RFIDentify.UI
 		/// 读取设备数据
 		/// </summary>
 		/// <param name="args"></param>
-		private void ReadDataFromEqu(List<RFIDData> datas)
+		private void ReadDataFromEqu(RFIDData data)
 		{
-			if (datas.Count == 0) return;
-			foreach (var arg in datas)
-			{
-				batcher.Add(arg);
-			}
+			batcher.Add(data);
 		}
 
 		private void ChartRefreshTimer_Tick(object? sender, EventArgs e)

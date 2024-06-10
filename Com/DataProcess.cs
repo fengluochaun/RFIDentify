@@ -55,7 +55,7 @@ namespace RFIDentify.Com
         public static RFIDData Baseline(RFIDData data)
         {
             if (BaseStand == null) ReadBasePhase();
-            data.Phase = Baseline(data.Phase, data.Channel, data.Tag);
+            data.ProcessedPhase = Baseline(data.Phase, data.Channel, data.Tag);
             int index = tags.IndexOf(data.Tag!);
 			data.Index = index == -1 ? null : index;
             return data;

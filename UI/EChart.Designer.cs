@@ -28,7 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			uiTableLayoutPanel1 = new Sunny.UI.UITableLayoutPanel();
+			tableLayoutPanel_Tags = new Sunny.UI.UITableLayoutPanel();
 			checkBox_Tag5 = new Sunny.UI.UICheckBox();
 			checkBox_Tag4 = new Sunny.UI.UICheckBox();
 			checkBox_Tag3 = new Sunny.UI.UICheckBox();
@@ -37,38 +37,38 @@
 			lineChart = new Sunny.UI.UILineChart();
 			btn_Start = new Sunny.UI.UIButton();
 			btn_Stop = new Sunny.UI.UIButton();
-			uiTableLayoutPanel1.SuspendLayout();
+			tableLayoutPanel_Tags.SuspendLayout();
 			SuspendLayout();
 			// 
-			// uiTableLayoutPanel1
+			// tableLayoutPanel_Tags
 			// 
-			uiTableLayoutPanel1.ColumnCount = 1;
-			uiTableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-			uiTableLayoutPanel1.Controls.Add(checkBox_Tag5, 0, 4);
-			uiTableLayoutPanel1.Controls.Add(checkBox_Tag4, 0, 3);
-			uiTableLayoutPanel1.Controls.Add(checkBox_Tag3, 0, 2);
-			uiTableLayoutPanel1.Controls.Add(checkBox_Tag2, 0, 1);
-			uiTableLayoutPanel1.Controls.Add(checkBox_Tag1, 0, 0);
-			uiTableLayoutPanel1.Location = new Point(853, 178);
-			uiTableLayoutPanel1.Name = "uiTableLayoutPanel1";
-			uiTableLayoutPanel1.RowCount = 5;
-			uiTableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-			uiTableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-			uiTableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-			uiTableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-			uiTableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-			uiTableLayoutPanel1.Size = new Size(82, 207);
-			uiTableLayoutPanel1.TabIndex = 0;
-			uiTableLayoutPanel1.TagString = null;
+			tableLayoutPanel_Tags.ColumnCount = 1;
+			tableLayoutPanel_Tags.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+			tableLayoutPanel_Tags.Controls.Add(checkBox_Tag5, 0, 4);
+			tableLayoutPanel_Tags.Controls.Add(checkBox_Tag4, 0, 3);
+			tableLayoutPanel_Tags.Controls.Add(checkBox_Tag3, 0, 2);
+			tableLayoutPanel_Tags.Controls.Add(checkBox_Tag2, 0, 1);
+			tableLayoutPanel_Tags.Controls.Add(checkBox_Tag1, 0, 0);
+			tableLayoutPanel_Tags.Location = new Point(766, 166);
+			tableLayoutPanel_Tags.Name = "tableLayoutPanel_Tags";
+			tableLayoutPanel_Tags.RowCount = 5;
+			tableLayoutPanel_Tags.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+			tableLayoutPanel_Tags.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+			tableLayoutPanel_Tags.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+			tableLayoutPanel_Tags.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+			tableLayoutPanel_Tags.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+			tableLayoutPanel_Tags.Size = new Size(80, 200);
+			tableLayoutPanel_Tags.TabIndex = 0;
+			tableLayoutPanel_Tags.TagString = null;
 			// 
 			// checkBox_Tag5
 			// 
 			checkBox_Tag5.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point);
 			checkBox_Tag5.ForeColor = Color.FromArgb(48, 48, 48);
-			checkBox_Tag5.Location = new Point(3, 167);
+			checkBox_Tag5.Location = new Point(3, 163);
 			checkBox_Tag5.MinimumSize = new Size(1, 1);
 			checkBox_Tag5.Name = "checkBox_Tag5";
-			checkBox_Tag5.Size = new Size(76, 35);
+			checkBox_Tag5.Size = new Size(74, 34);
 			checkBox_Tag5.TabIndex = 5;
 			checkBox_Tag5.Text = "tag5";
 			// 
@@ -76,10 +76,10 @@
 			// 
 			checkBox_Tag4.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point);
 			checkBox_Tag4.ForeColor = Color.FromArgb(48, 48, 48);
-			checkBox_Tag4.Location = new Point(3, 126);
+			checkBox_Tag4.Location = new Point(3, 123);
 			checkBox_Tag4.MinimumSize = new Size(1, 1);
 			checkBox_Tag4.Name = "checkBox_Tag4";
-			checkBox_Tag4.Size = new Size(76, 35);
+			checkBox_Tag4.Size = new Size(74, 34);
 			checkBox_Tag4.TabIndex = 4;
 			checkBox_Tag4.Text = "tag4";
 			// 
@@ -87,10 +87,10 @@
 			// 
 			checkBox_Tag3.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point);
 			checkBox_Tag3.ForeColor = Color.FromArgb(48, 48, 48);
-			checkBox_Tag3.Location = new Point(3, 85);
+			checkBox_Tag3.Location = new Point(3, 83);
 			checkBox_Tag3.MinimumSize = new Size(1, 1);
 			checkBox_Tag3.Name = "checkBox_Tag3";
-			checkBox_Tag3.Size = new Size(76, 35);
+			checkBox_Tag3.Size = new Size(74, 34);
 			checkBox_Tag3.TabIndex = 3;
 			checkBox_Tag3.Text = "tag3";
 			// 
@@ -98,10 +98,10 @@
 			// 
 			checkBox_Tag2.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point);
 			checkBox_Tag2.ForeColor = Color.FromArgb(48, 48, 48);
-			checkBox_Tag2.Location = new Point(3, 44);
+			checkBox_Tag2.Location = new Point(3, 43);
 			checkBox_Tag2.MinimumSize = new Size(1, 1);
 			checkBox_Tag2.Name = "checkBox_Tag2";
-			checkBox_Tag2.Size = new Size(76, 35);
+			checkBox_Tag2.Size = new Size(74, 34);
 			checkBox_Tag2.TabIndex = 2;
 			checkBox_Tag2.Text = "tag2";
 			// 
@@ -112,19 +112,22 @@
 			checkBox_Tag1.Location = new Point(3, 3);
 			checkBox_Tag1.MinimumSize = new Size(1, 1);
 			checkBox_Tag1.Name = "checkBox_Tag1";
-			checkBox_Tag1.Size = new Size(76, 35);
+			checkBox_Tag1.Size = new Size(74, 34);
 			checkBox_Tag1.TabIndex = 1;
 			checkBox_Tag1.Text = "tag1";
 			// 
 			// lineChart
 			// 
+			lineChart.FillColor = Color.White;
 			lineChart.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point);
+			lineChart.ForeColor = Color.Black;
 			lineChart.LegendFont = new Font("宋体", 9F, FontStyle.Regular, GraphicsUnit.Point);
-			lineChart.Location = new Point(75, 27);
+			lineChart.Location = new Point(17, 20);
 			lineChart.MinimumSize = new Size(1, 1);
 			lineChart.MouseDownType = Sunny.UI.UILineChartMouseDownType.Zoom;
 			lineChart.Name = "lineChart";
-			lineChart.Size = new Size(738, 489);
+			lineChart.RectColor = Color.FromArgb(255, 255, 192);
+			lineChart.Size = new Size(709, 471);
 			lineChart.SubFont = new Font("宋体", 9F, FontStyle.Regular, GraphicsUnit.Point);
 			lineChart.TabIndex = 1;
 			lineChart.Text = "uiLineChart1";
@@ -142,7 +145,7 @@
 			btn_Start.ForeColor = Color.Black;
 			btn_Start.ForeHoverColor = Color.Black;
 			btn_Start.ForePressColor = Color.Black;
-			btn_Start.Location = new Point(589, 547);
+			btn_Start.Location = new Point(497, 527);
 			btn_Start.MinimumSize = new Size(1, 1);
 			btn_Start.Name = "btn_Start";
 			btn_Start.Radius = 15;
@@ -169,7 +172,7 @@
 			btn_Stop.ForeColor = Color.Black;
 			btn_Stop.ForeHoverColor = Color.Black;
 			btn_Stop.ForePressColor = Color.Black;
-			btn_Stop.Location = new Point(766, 547);
+			btn_Stop.Location = new Point(674, 527);
 			btn_Stop.MinimumSize = new Size(1, 1);
 			btn_Stop.Name = "btn_Stop";
 			btn_Stop.Radius = 15;
@@ -190,16 +193,16 @@
 			Controls.Add(btn_Stop);
 			Controls.Add(btn_Start);
 			Controls.Add(lineChart);
-			Controls.Add(uiTableLayoutPanel1);
+			Controls.Add(tableLayoutPanel_Tags);
 			Name = "EChart";
-			Size = new Size(982, 609);
-			uiTableLayoutPanel1.ResumeLayout(false);
+			Size = new Size(880, 592);
+			tableLayoutPanel_Tags.ResumeLayout(false);
 			ResumeLayout(false);
 		}
 
 		#endregion
 
-		private Sunny.UI.UITableLayoutPanel uiTableLayoutPanel1;
+		private Sunny.UI.UITableLayoutPanel tableLayoutPanel_Tags;
 		private Sunny.UI.UICheckBox checkBox_Tag1;
 		private Sunny.UI.UICheckBox checkBox_Tag5;
 		private Sunny.UI.UICheckBox checkBox_Tag4;
