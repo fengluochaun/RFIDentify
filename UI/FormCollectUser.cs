@@ -18,6 +18,7 @@ namespace RFIDentify.UI
 		{
 			InitializeComponent();
 			//Controls.Add(e);
+			eChart1.EnableSaveButton();
 		}
 	}
 }

@@ -33,9 +33,10 @@
 			// 
 			// eChart1
 			// 
-			eChart1.Location = new Point(87, 109);
+			eChart1.AutoSize = true;
+			eChart1.Location = new Point(46, 89);
 			eChart1.Name = "eChart1";
-			eChart1.Size = new Size(943, 589);
+			eChart1.Size = new Size(956, 589);
 			eChart1.TabIndex = 0;
 			eChart1.WriteCsvFilePath = "CollectionData/Data/temp.csv";
 			// 
@@ -47,6 +48,7 @@
 			Name = "FormCollectUser";
 			Text = "FormCollectUser";
 			ResumeLayout(false);
+			PerformLayout();
 		}
 
 		#endregion

@@ -844,14 +844,14 @@ namespace RFIDentify.Com
                 arg.Channel = Convert.ToInt32(currentChannelIndex.toInteger().toString());
                 //DataProcess.Baseline(arg);
                 // 优化为全局变量
-                using (var writer = new StreamWriter(System.IO.File.Open(WriteCsvFilePath!, FileMode.Append)))
-                {
-                    using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
-                    {
-                        csv.WriteRecord(arg);
-                        csv.NextRecord();
-                    }
-                }
+                //using (var writer = new StreamWriter(System.IO.File.Open(WriteCsvFilePath!, FileMode.Append)))
+                //{
+                //    using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+                //    {
+                //        csv.WriteRecord(arg);
+                //        csv.NextRecord();
+                //    }
+                //}
                 ReadData(arg);
                 epcname = ename;
             }

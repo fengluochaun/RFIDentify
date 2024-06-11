@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using com.sun.org.apache.xml.@internal.resolver.helpers;
 using com.sun.tools.javac.util;
 using CsvHelper;
 using RFIDentify.Com;
@@ -170,11 +171,19 @@ namespace RFIDentify.UI
 #endif
 		}
 
-		public delegate void SaveDataHandler(object sender, EventArgs e);
-		public SaveDataHandler handler;
-		public void AddSaveButton()
+		public void EnableSaveButton()
 		{
-
+			btn_Save.Visible = true;
+			btn_Save.Click += btn_Save_Click;
+			tableLayoutPanel_Btn.Location = new Point(310, 520);
+			tableLayoutPanel_Btn.Size = new Size(510, 50);
+			tableLayoutPanel_Btn.ColumnCount = 3;
+			tableLayoutPanel_Btn.ColumnStyles.Clear();
+			for (int i = 0; i < tableLayoutPanel_Btn.ColumnCount; i++)
+			{
+				tableLayoutPanel_Btn.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 1f / 3));
+			}
+			tableLayoutPanel_Btn.Controls.Add(btn_Save);
 		}
 
 		/// <summary>
@@ -225,7 +234,7 @@ namespace RFIDentify.UI
 								Console.WriteLine("Index is null");
 							}
 							DataProcess.Baseline(data); // 基准化
-							Debug.Assert(data.ProcessedPhase.HasValue);
+							System.Diagnostics.Debug.Assert(data.ProcessedPhase.HasValue);
 						}
 						// 限制数据量
 						foreach (var item in datas)
@@ -360,9 +369,18 @@ namespace RFIDentify.UI
 #endif
 		}
 
-		private void btn_Save_Click(object sender, EventArgs e)
+		private void btn_Save_Click(object? sender, EventArgs e)
 		{
-			
+			MessageBox.Show("保存成功");
+			foreach (var item in datas)
+			{
+				item.Clear();
+			}
+		}
+
+		private void EChart_Load(object sender, EventArgs e)
+		{
+
 		}
 	}
 }

@@ -37,7 +37,10 @@
 			lineChart = new Sunny.UI.UILineChart();
 			btn_Start = new Sunny.UI.UIButton();
 			btn_Stop = new Sunny.UI.UIButton();
+			tableLayoutPanel_Btn = new Sunny.UI.UITableLayoutPanel();
+			btn_Save = new Sunny.UI.UIButton();
 			tableLayoutPanel_Tags.SuspendLayout();
+			tableLayoutPanel_Btn.SuspendLayout();
 			SuspendLayout();
 			// 
 			// tableLayoutPanel_Tags
@@ -145,7 +148,7 @@
 			btn_Start.ForeColor = Color.Black;
 			btn_Start.ForeHoverColor = Color.Black;
 			btn_Start.ForePressColor = Color.Black;
-			btn_Start.Location = new Point(497, 527);
+			btn_Start.Location = new Point(3, 3);
 			btn_Start.MinimumSize = new Size(1, 1);
 			btn_Start.Name = "btn_Start";
 			btn_Start.Radius = 15;
@@ -157,6 +160,7 @@
 			btn_Start.Size = new Size(125, 44);
 			btn_Start.TabIndex = 13;
 			btn_Start.Text = "开始";
+			btn_Start.TipsFont = new Font("宋体", 9F, FontStyle.Regular, GraphicsUnit.Point);
 			btn_Start.Click += btn_Start_Click;
 			// 
 			// btn_Stop
@@ -172,7 +176,7 @@
 			btn_Stop.ForeColor = Color.Black;
 			btn_Stop.ForeHoverColor = Color.Black;
 			btn_Stop.ForePressColor = Color.Black;
-			btn_Stop.Location = new Point(674, 527);
+			btn_Stop.Location = new Point(173, 3);
 			btn_Stop.MinimumSize = new Size(1, 1);
 			btn_Stop.Name = "btn_Stop";
 			btn_Stop.Radius = 15;
@@ -186,17 +190,64 @@
 			btn_Stop.Text = "停止";
 			btn_Stop.Click += btn_Stop_Click;
 			// 
+			// tableLayoutPanel_Btn
+			// 
+			tableLayoutPanel_Btn.ColumnCount = 2;
+			tableLayoutPanel_Btn.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.3333321F));
+			tableLayoutPanel_Btn.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.3333321F));
+			tableLayoutPanel_Btn.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.3333321F));
+			tableLayoutPanel_Btn.Controls.Add(btn_Stop, 1, 0);
+			tableLayoutPanel_Btn.Controls.Add(btn_Start, 0, 0);
+			tableLayoutPanel_Btn.Location = new Point(460, 520);
+			tableLayoutPanel_Btn.Margin = new Padding(3, 3, 60, 3);
+			tableLayoutPanel_Btn.Name = "tableLayoutPanel_Btn";
+			tableLayoutPanel_Btn.RowCount = 1;
+			tableLayoutPanel_Btn.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+			tableLayoutPanel_Btn.Size = new Size(340, 50);
+			tableLayoutPanel_Btn.TabIndex = 14;
+			tableLayoutPanel_Btn.TagString = null;
+			// 
+			// btn_Save
+			// 
+			btn_Save.FillColor = Color.Beige;
+			btn_Save.FillColor2 = Color.LightCyan;
+			btn_Save.FillColorGradient = true;
+			btn_Save.FillColorGradientDirection = FlowDirection.RightToLeft;
+			btn_Save.FillHoverColor = Color.LightCyan;
+			btn_Save.FillPressColor = Color.Beige;
+			btn_Save.FillSelectedColor = Color.Beige;
+			btn_Save.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point);
+			btn_Save.ForeColor = Color.Black;
+			btn_Save.ForeHoverColor = Color.Black;
+			btn_Save.ForePressColor = Color.Black;
+			btn_Save.Location = new Point(0, 548);
+			btn_Save.MinimumSize = new Size(1, 1);
+			btn_Save.Name = "btn_Save";
+			btn_Save.Radius = 15;
+			btn_Save.RectColor = Color.LightCyan;
+			btn_Save.RectHoverColor = Color.Beige;
+			btn_Save.RectPressColor = Color.Transparent;
+			btn_Save.RectSides = ToolStripStatusLabelBorderSides.Left | ToolStripStatusLabelBorderSides.Right;
+			btn_Save.RectSize = 2;
+			btn_Save.Size = new Size(125, 44);
+			btn_Save.TabIndex = 14;
+			btn_Save.Text = "保存";
+			btn_Save.TipsFont = new Font("宋体", 9F, FontStyle.Regular, GraphicsUnit.Point);
+			btn_Save.Visible = false;
+			// 
 			// EChart
 			// 
 			AutoScaleDimensions = new SizeF(9F, 20F);
 			AutoScaleMode = AutoScaleMode.Font;
-			Controls.Add(btn_Stop);
-			Controls.Add(btn_Start);
+			Controls.Add(tableLayoutPanel_Btn);
 			Controls.Add(lineChart);
+			Controls.Add(btn_Save);
 			Controls.Add(tableLayoutPanel_Tags);
 			Name = "EChart";
 			Size = new Size(880, 592);
+			Load += EChart_Load;
 			tableLayoutPanel_Tags.ResumeLayout(false);
+			tableLayoutPanel_Btn.ResumeLayout(false);
 			ResumeLayout(false);
 		}
 
@@ -211,5 +262,7 @@
 		private Sunny.UI.UILineChart lineChart;
 		private Sunny.UI.UIButton btn_Start;
 		private Sunny.UI.UIButton btn_Stop;
+		private Sunny.UI.UITableLayoutPanel tableLayoutPanel_Btn;
+		private Sunny.UI.UIButton btn_Save;
 	}
 }
