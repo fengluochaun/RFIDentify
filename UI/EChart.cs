@@ -26,7 +26,48 @@ namespace RFIDentify.UI
 	public partial class EChart : UserControl
 	{
 		public Batcher<RFIDData> batcher;
-		public string WriteCsvFilePath { get; set; } = "CollectionData/Data/temp.csv";
+
+		private readonly string basePath = AppDomain.CurrentDomain.BaseDirectory;
+		private readonly string defaultCollectPath = $"CollectionData\\Data\\temp{DateTime.Now:yyyyMMddHHmmss}.csv";
+		private readonly string defaultBaseStandPath = "CollectionData\\Base\\baseStand.csv";
+		private string? baseStandPath; 
+		// 设置时应该给绝对路径，而非相对根目录路径
+		public string BaseStandPath { 			
+			get => baseStandPath!;
+			set => baseStandPath = value;
+		}
+		private string? writeCsvFilePath;
+		// 设置时应该给绝对路径，而非相对根目录路径
+		public string WriteCsvFilePath {
+			get => writeCsvFilePath!; 
+			set
+			{
+				if (string.IsNullOrEmpty(value)) return;
+				FileInfo csvFile;
+				try
+				{
+					csvFile = new FileInfo(value);
+					DirectoryInfo parent = csvFile.Directory!;
+					if (parent != null && !parent.Exists)
+					{
+						parent.Create();
+					}
+					if (!System.IO.File.Exists(csvFile.FullName))
+					{
+						using (csvFile.Create()) { }
+						using var writer = new StreamWriter(System.IO.File.Open(csvFile.FullName!, FileMode.Append));
+						using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+						csv.WriteHeader<RFIDData>();
+						csv.NextRecord();
+					}
+				}
+				catch (IOException e)
+				{
+					Console.WriteLine(e.ToString());
+				}
+				writeCsvFilePath = value;
+			}
+		}
 
 		private UILineOption option = new();
 		private Color[] colors =
@@ -47,9 +88,6 @@ namespace RFIDentify.UI
 		//private static Dictionary<string, List<RFIDData>> datas = new Dictionary<string, List<RFIDData>>();
 		private static List<List<RFIDData>> datas = new();
 
-		private readonly string basePath = AppDomain.CurrentDomain.BaseDirectory;
-		private readonly string defaultCollectPath_ = $"CollectionData/Data/temp{DateTime.Now:yyyyMMddHHmmss}.csv";//识别数据存储路径
-		private readonly string baseStandPath_ = "CollectionData/Base/baseStand.csv";
 #if SIMULATION
 		private static ManualResetEvent _threadOne = new ManualResetEvent(false);
 		public static bool[] _isOpen = new bool[] { false };
@@ -74,6 +112,8 @@ namespace RFIDentify.UI
 #endif
 			InitializeChart();
 			InitializeTableLayoutPanel();
+
+			BaseStandPath = basePath + defaultBaseStandPath;
 
 			chartRefreshTimer.Interval = 50;
 			chartRefreshTimer.Tick += new EventHandler(RefreshChart!);
@@ -348,9 +388,22 @@ namespace RFIDentify.UI
 
 		private void btn_Start_Click(object sender, EventArgs e)
 		{
+			if (string.IsNullOrEmpty(baseStandPath))
+			{
+				MessageBox.Show("请设置基准文件路径");
+				return;
+			}
+			if (string.IsNullOrEmpty(writeCsvFilePath))
+			{
+				WriteCsvFilePath = basePath + defaultCollectPath;
+			}
 			if ((threadRead.ThreadState & System.Threading.ThreadState.Unstarted) == System.Threading.ThreadState.Unstarted)
 			{
 				threadRead.Start();
+			}
+			else
+			{
+				MessageBox.Show("已经启动");
 			}
 			// 启动定时器
 			chartRefreshTimer.Start();

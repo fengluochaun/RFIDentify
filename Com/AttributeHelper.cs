@@ -18,7 +18,7 @@ namespace RFIDentify.Com
         public static string GetTName(this Type type)
         {
             string tableName = "";
-            TableAttribute attr = type.GetCustomAttribute<TableAttribute>();
+            TableAttribute attr = type.GetCustomAttribute<TableAttribute>()!;
             if (attr != null)
                 tableName = attr.TableName;
             if (string.IsNullOrEmpty(tableName))
@@ -34,7 +34,7 @@ namespace RFIDentify.Com
         public static string GetColName(this PropertyInfo property)
         {
             string colName = "";
-            ColumnAttribute attr = property.GetCustomAttribute<ColumnAttribute>();
+            ColumnAttribute attr = property.GetCustomAttribute<ColumnAttribute>()!;
             if (attr != null)
                 colName = attr.ColumnName;
             if (string.IsNullOrEmpty(colName))
@@ -50,7 +50,7 @@ namespace RFIDentify.Com
         public static string GetPrimaryName(this Type type)
         {
             string priName = "";
-            PrimaryKeyAttribute attr = type.GetCustomAttribute<PrimaryKeyAttribute>();
+            PrimaryKeyAttribute attr = type.GetCustomAttribute<PrimaryKeyAttribute>()!;
             if (attr != null)
                 priName = string.Join(",", attr.KeyName);
             return priName;
@@ -64,7 +64,7 @@ namespace RFIDentify.Com
         /// <returns></returns>
         public static bool IsPrimaryKey(this PropertyInfo property)
         {
-            Type type = property.DeclaringType;
+            Type type = property.DeclaringType!;
             string primaryKey = type.GetPrimaryName();//获取该类型的主键名
             string colName = property.GetColName();//获取该属性的映射列名
             return (primaryKey == colName);
@@ -77,7 +77,7 @@ namespace RFIDentify.Com
         /// <returns></returns>
         public static bool IsAutoIncrement(this Type type)
         {
-            PrimaryKeyAttribute attr = type.GetCustomAttribute<PrimaryKeyAttribute>();
+            PrimaryKeyAttribute attr = type.GetCustomAttribute<PrimaryKeyAttribute>()!;
             if (attr != null)
                 return attr.autoIncrement;
             return false;

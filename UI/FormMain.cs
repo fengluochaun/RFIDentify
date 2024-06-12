@@ -28,25 +28,29 @@ namespace RFIDentify.UI
             formRegisterFromEquipment = new(this); 
             formCollectionUser = new();
 
+            formRegister.UserChanged += formCollectionUser.UpdateByUser;
+
             Aside.TabControl = MainTabControl;
 
-            int pageindex = 1000;
-
+            int pageindex = 1000;            
             
-
             AddPage(formIdentify, pageindex);
             Aside.CreateNode("识别", pageindex++);
+
+            pageindex = 2000;
 
             AddPage(formUsers, pageindex);
             Aside.CreateNode("人员", pageindex++);
 
+            pageindex = 3000;
             AddPage(formRegister, pageindex);
             Aside.CreateNode("认证", pageindex++);
 
-            AddPage(formRegisterFromEquipment, pageindex);
-            TreeNode node = Aside.CreateNode("采集", pageindex++);
+            pageindex = 4000;
+            //AddPage(formRegisterFromEquipment, pageindex);
+            TreeNode parent = Aside.CreateNode("采集", pageindex++);
             AddPage(formCollectionUser, pageindex);
-            Aside.CreateChildNode(node, "采集人员信息", pageindex++);
+            Aside.CreateChildNode(parent, "采集人员信息", pageindex++);
         }      
     }
 }

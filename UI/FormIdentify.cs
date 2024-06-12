@@ -39,8 +39,8 @@ namespace RFIDentify.UI
 		private readonly int timeout = 10000;
 
 		private readonly string basePath = AppDomain.CurrentDomain.BaseDirectory;
-		private readonly string IdentificationPath_ = "CollectionData/Identification/temp.csv";//识别数据存储路径
-		private readonly string baseStandPath_ = "CollectionData/Base/baseStand.csv";
+		private readonly string IdentificationPath_ = "CollectionData\\Identification\\temp.csv";//识别数据存储路径
+		private readonly string baseStandPath_ = "CollectionData\\Base\\baseStand.csv";
 #if SIMULATION
 		private static ManualResetEvent _threadOne = new ManualResetEvent(false);
 		public static bool[] _isOpen = new bool[] { false };

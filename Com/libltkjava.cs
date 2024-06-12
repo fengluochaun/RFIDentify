@@ -31,7 +31,7 @@ namespace RFIDentify.Com
         private long beginTime = ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds();
 		#region 变量
 		private LLRPConnection connection;
-        public static string? WriteCsvFilePath { get; set; }
+        //public static string? WriteCsvFilePath { get; set; }
 		private readonly string basePath = AppDomain.CurrentDomain.BaseDirectory;
 
 		static Logger logger = Logger.getLogger("org.impinj.llrp.ltk.examples.docsample4");
@@ -910,29 +910,29 @@ namespace RFIDentify.Com
         public void powerON(string args, string fileName)
         {
             BasicConfigurator.configure();
-			FileInfo csvFile;
-			try
-			{
-				csvFile = new FileInfo(Path.Combine(basePath, fileName));
-				DirectoryInfo parent = csvFile.Directory!;
-				if (parent != null && !parent.Exists)
-				{
-					parent.Create();
-				}
-                if (!System.IO.File.Exists(csvFile.FullName))
-                {
-					using (csvFile.Create()) { }
-					using var writer = new StreamWriter(System.IO.File.Open(csvFile.FullName!, FileMode.Append));
-					using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
-					csv.WriteHeader<RFIDData>();
-					csv.NextRecord();
-				}				
-			}
-			catch (System.IO.IOException e)
-			{
-				System.Console.WriteLine(e.ToString());
-			}
-			WriteCsvFilePath = Path.Combine(basePath, fileName);
+			//FileInfo csvFile;
+			//try
+			//{
+			//	csvFile = new FileInfo(Path.Combine(basePath, fileName));
+			//	DirectoryInfo parent = csvFile.Directory!;
+			//	if (parent != null && !parent.Exists)
+			//	{
+			//		parent.Create();
+			//	}
+   //             if (!System.IO.File.Exists(csvFile.FullName))
+   //             {
+			//		using (csvFile.Create()) { }
+			//		using var writer = new StreamWriter(System.IO.File.Open(csvFile.FullName!, FileMode.Append));
+			//		using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+			//		csv.WriteHeader<RFIDData>();
+			//		csv.NextRecord();
+			//	}				
+			//}
+			//catch (System.IO.IOException e)
+			//{
+			//	System.Console.WriteLine(e.ToString());
+			//}
+			//WriteCsvFilePath = Path.Combine(basePath, fileName);
 
 			// Only show root events from the base logger
 			Logger.getRootLogger().setLevel(Level.ERROR);
@@ -951,25 +951,25 @@ namespace RFIDentify.Com
         //开始读
         public void startRead(string? filepath)
         {
-            if (!string.IsNullOrEmpty(filepath))
-            {
-				FileInfo csvFile;
-				try
-				{
-					csvFile = new FileInfo(filepath);
-					DirectoryInfo parent = csvFile.Directory!;
-					if (parent != null && !parent.Exists)
-					{
-						parent.Create();
-					}
-                    csvFile.Create();
-				}
-				catch (System.IO.IOException e)
-				{
-                    System.Console.WriteLine(e.ToString());
-				}
-                WriteCsvFilePath = filepath;
-			}
+   //         if (!string.IsNullOrEmpty(filepath))
+   //         {
+			//	FileInfo csvFile;
+			//	try
+			//	{
+			//		csvFile = new FileInfo(filepath);
+			//		DirectoryInfo parent = csvFile.Directory!;
+			//		if (parent != null && !parent.Exists)
+			//		{
+			//			parent.Create();
+			//		}
+   //                 csvFile.Create();
+			//	}
+			//	catch (System.IO.IOException e)
+			//	{
+   //                 System.Console.WriteLine(e.ToString());
+			//	}
+   //             WriteCsvFilePath = filepath;
+			//}
             enableImpinjExtensions();
             factoryDefault();
             getReaderCapabilities();

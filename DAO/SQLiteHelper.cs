@@ -14,7 +14,7 @@ namespace RFIDentify.DAO
     public class SQLiteHelper
     {
         private string dataSource = "User.db";
-        private static SQLiteConnection connection;
+        private static SQLiteConnection? connection;
         public SQLiteHelper(string fileName) : this()
         {
             dataSource = fileName;
@@ -30,7 +30,7 @@ namespace RFIDentify.DAO
         /// 获取单例
         /// </summary>
         private static object syncObj = new object();
-        private static SQLiteHelper instance = null;
+        private static SQLiteHelper? instance = null;
         public static SQLiteHelper GetInstance()
         {
             if (instance == null)
