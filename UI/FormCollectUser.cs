@@ -15,15 +15,21 @@ namespace RFIDentify.UI
 {
 	public partial class FormCollectUser : UIPage
 	{
+		private FormMain parent;
+
+		public Action<string>? OnSave;
 		private readonly string basePath = AppDomain.CurrentDomain.BaseDirectory;
 		private readonly string defaultBaseStandPath = "CollectionData\\Base\\baseStand.csv";
 		private string? writeCsvFilePath;
 		private List<string> baseStandPathList = new List<string>();
-		public FormCollectUser()
+
+		public FormCollectUser(FormMain parent)
 		{
+			this.parent = parent;
 			InitializeComponent();
 			eChart.EnableSaveButton();
 			eChart.AccessibilityObject.Name = "采集人员信息";
+			eChart.OnSave += btn_Save_Click;
 
 			baseStandPathList = ConfigManager.GetStringListFromConfig("BaseStandPathList");
 			if (baseStandPathList.Count == 0)
@@ -33,7 +39,7 @@ namespace RFIDentify.UI
 				ConfigManager.SaveValueToConfig("CurrentBaseStandPath", "0");
 			}
 
-			UpdateComboBox();
+			InitializeComboBox();
 		}
 
 		private void InitializeComboBox()
@@ -57,15 +63,27 @@ namespace RFIDentify.UI
 			//获取文件夹文件的数量
 			int time = Directory.GetFiles(path).Length;
 			writeCsvFilePath = Path.Combine(basePath, "User", id.ToString(), "unprocessed", $"time-{time}.csv");
+			eChart.WriteCsvFilePath = writeCsvFilePath;
 		}
 
 		private void btn_SelectFile_Click(object sender, EventArgs e)
 		{
 			string filename = "";
-			//if (FileEx.OpenDialog(ref filename, ".csv"))
-			if (FileEx.OpenDialog(ref filename, "CSV files (*.csv)|*.csv|All files (*.*)|*.*", "csv"))
+			try
 			{
-				UIMessageTip.ShowOk(filename);
+				if (FileEx.OpenDialog(ref filename, "CSV files (*.csv)|*.csv|All files (*.*)|*.*", "csv"))
+				{
+					UIMessageTip.ShowOk(filename);
+				}
+			}
+			catch(FileNotFoundException ex)
+			{
+				Console.WriteLine(ex.Message);
+			}
+			
+			if (string.IsNullOrEmpty(filename))
+			{
+				return;
 			}
 			baseStandPathList.Add(filename);
 			ConfigManager.SaveStringListToConfig("BaseStandPathList", baseStandPathList);
@@ -76,6 +94,13 @@ namespace RFIDentify.UI
 		{
 			uiToolTip.SetToolTip(comboBox, baseStandPathList[comboBox.SelectedIndex]);
 			ConfigManager.SaveValueToConfig("CurrentBaseStandPath", comboBox.SelectedIndex.ToString());
+			DataProcess.UpdateBaseStand(baseStandPathList[comboBox.SelectedIndex]);
+		}
+
+		private void btn_Save_Click()
+		{
+			parent.SelectPage(3000);
+			OnSave!.Invoke(writeCsvFilePath!);
 		}
 	}
 }

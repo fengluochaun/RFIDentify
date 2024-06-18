@@ -26,6 +26,8 @@ namespace RFIDentify.UI
 	public partial class EChart : UserControl
 	{
 		public Batcher<RFIDData> batcher;
+		public Action? OnSave;
+		public bool IsProcessed { get; set; } = true;
 
 		private readonly string basePath = AppDomain.CurrentDomain.BaseDirectory;
 		private readonly string defaultCollectPath = $"CollectionData\\Data\\temp{DateTime.Now:yyyyMMddHHmmss}.csv";
@@ -86,11 +88,11 @@ namespace RFIDentify.UI
 		private readonly int MaxMilliSecondRange = 6000;
 		private Thread threadRead;
 		//private static Dictionary<string, List<RFIDData>> datas = new Dictionary<string, List<RFIDData>>();
-		private static List<List<RFIDData>> datas = new();
+		private List<List<RFIDData>> datas = new();
 
 #if SIMULATION
-		private static ManualResetEvent _threadOne = new ManualResetEvent(false);
-		public static bool[] _isOpen = new bool[] { false };
+		private ManualResetEvent _threadOne = new ManualResetEvent(false);
+		public bool[] _isOpen = new bool[] { false };
 #else
 		private static libltkjava? libltkjava;
 		private readonly string readerPath = "Speedwayr-11-25-ab.local";//读写器连接路径
@@ -284,9 +286,14 @@ namespace RFIDentify.UI
 								item.RemoveRange(0, item.Count - 5000);
 							}
 						}
-						using var writer = new StreamWriter(WriteCsvFilePath, append: true);
+						using var writer = new StreamWriter(File.Open(WriteCsvFilePath, FileMode.Append));
 						using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
-						csv.WriteRecords(batch);
+						foreach(var batchData in batch)
+						{
+							csv.WriteRecord(batchData);
+							csv.NextRecord();
+						}
+						//csv.WriteRecords(batch);
 					}
 					catch (ArgumentException ex)
 					{
@@ -321,8 +328,10 @@ namespace RFIDentify.UI
 					{
 						foreach (var data in datas)
 						{
+							if (data.IsNullOrEmpty()) continue;
 							tempTime.Add(data.Select(item => System.Convert.ToDouble(item.Time) / 1000).ToList());
-							tempPhase.Add(data.Select(item => item.Phase).ToList());
+							tempPhase.Add(data.Select(item => IsProcessed ? item.ProcessedPhase.GetValueOrDefault(item.Phase):item.Phase).ToList());
+							//Trace.WriteLine($"{data.Count}:{IsProcessed}");
 						}
 					}
 					finally
@@ -352,6 +361,11 @@ namespace RFIDentify.UI
 			}
 		}
 
+		/// <summary>
+		/// tag选择框改变事件
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		private void checkBox_CheckedChanged(object? sender, EventArgs e)
 		{
 			if (rwLock.TryEnterWriteLock(timeout))
@@ -365,15 +379,10 @@ namespace RFIDentify.UI
 							if (checkBox.Checked)
 							{
 								option.Series[$"val{i + 1}"].Visible = true;
-								//Trace.WriteLine($"CheckBox Color: {checkBox.CheckBoxColor}");
-								//Trace.WriteLine($"Series Color: {option.Series[$"val{i + 1}"].Color}");
-								//option.Series[$"val{i + 1}"].ShowLine = true;
-								//option.Series[$"val{i + 1}"].Color = checkBox.CheckBoxColor;
 							}
 							else
 							{
 								option.Series[$"val{i + 1}"].Visible = false;
-								//option.Series[$"val{i + 1}"].ShowLine = false;
 							}
 						}
 					}
@@ -424,11 +433,12 @@ namespace RFIDentify.UI
 
 		private void btn_Save_Click(object? sender, EventArgs e)
 		{
-			MessageBox.Show("保存成功");
+			//MessageBox.Show("保存成功");
 			foreach (var item in datas)
 			{
 				item.Clear();
 			}
+			OnSave?.Invoke();
 		}
 
 		private void EChart_Load(object sender, EventArgs e)

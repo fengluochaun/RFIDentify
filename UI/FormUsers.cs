@@ -36,14 +36,14 @@ namespace RFIDentify.UI
         {
             int id = int.Parse(this.DGV_Users.Rows[e.RowIndex].Cells[0].Value.ToString()!);
             _parent.formRegister.UpdateByUserId(id);
-            _parent.SelectPage(1002);
+            _parent.SelectPage(3000);
         }
 
         private void DGV_Users_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
             int id = int.Parse(this.DGV_Users.Rows[e.RowIndex].Cells[0].Value.ToString()!);
             _parent.formRegister.UpdateByUserId(id);
-            _parent.SelectPage(1002);
+            _parent.SelectPage(3000);
         }
     }
 }

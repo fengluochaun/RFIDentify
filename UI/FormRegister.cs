@@ -60,12 +60,14 @@ namespace RFIDentify.UI
 			this.listBox.DataSource = userCSVPaths;
 			_parent = formMain;
 			UpdateText();
+			CreateUserDirectory();
 		}
 
 		public FormRegister(FormMain formMain, int userId)
 		{
 			InitializeComponent();
 			UpdateByUserId(userId);
+			CreateUserDirectory();
 			_parent = formMain;
 			this.listBox.DataSource = userCSVPaths;
 		}
@@ -78,7 +80,10 @@ namespace RFIDentify.UI
 			stashUser = JsonConvert.DeserializeObject<UserDisplayDto>(JsonConvert.SerializeObject(UserDisplayDto.GetFromUser(user))!);
 			this.addOrEdit = true;
 			UpdateText();
+			CreateUserDirectory();
 			InitListBox();
+			trainDataSum = userCSVPaths.Count / 5;
+			this.roundProcess.Value = CalculateCompletion();
 		}
 		public void UpdateByUserId()
 		{
@@ -87,11 +92,12 @@ namespace RFIDentify.UI
 			stashUser = new UserDisplayDto() { Id = id };
 			this.listBox.DataSource = userCSVPaths;
 			UpdateText();
+			CreateUserDirectory();
 		}
 		private void InitListBox()
 		{
 			userCSVPaths.Clear();
-			string path = Path.Combine(basePath, "User", $"{user!.Id}");
+			string path = Path.Combine(basePath, "User", $"{user!.Id}", "find_peak");
 			if (Directory.Exists(path))
 			{
 				foreach (string file in Directory.GetFiles(path))
@@ -128,7 +134,7 @@ namespace RFIDentify.UI
 			this.stashUser!.Description = txt_Description.Text;
 			stashPicture = user!.Picture;
 			CopyStashFiles();
-			//GenerateUserTrainCSV();            ;
+			//GenerateUserTrainCSV();
 			this.roundProcess.Value = CalculateCompletion();
 			MessageBox.Show("保存成功！");
 		}
@@ -246,6 +252,7 @@ namespace RFIDentify.UI
 			completion += trainDataSum;
 			return completion;
 		}
+
 		private void CopyStashFiles()
 		{
 			//Copy each item in the stashfiles from the source address to the destination address
@@ -258,12 +265,81 @@ namespace RFIDentify.UI
 			stashFiles.Clear();
 		}
 
-		private void GenerateUserTrainCSV()
+		private void CreateUserDirectory()
+		{
+			string userPath = Path.Combine(basePath, "User", $"{user!.Id}");
+			Directory.CreateDirectory(userPath);
+			Directory.CreateDirectory(Path.Combine(userPath, "unprocessed"));
+			Directory.CreateDirectory(Path.Combine(userPath, "baselined"));
+			Directory.CreateDirectory(Path.Combine(userPath, "amplituded"));
+			Directory.CreateDirectory(Path.Combine(userPath, "find_peak"));
+		}
+
+		public void GenerateUserTrainData(string sourcePath)
 		{
 			// 调用接口，destinationFilePath的数组为参数
 			// 返回是否成功和找到的峰值个数, find_peak 的结果放在destinationFilePath的同级目录的Train文件夹中
 			// 即User/2/...csv => User/2/Train/...csv
 			//trainDataSum = ...;
+			// 基准化 -> 分tag -> 幅值归一化 -> 找峰值
+			string time = sourcePath.Split("\\").Last().Split("-")[1]; // 此为第几次行动
+																	   // 基准化、分tag
+			string destinationPath = Path.Combine(basePath, "User", $"{user!.Id}", "baselined");
+			string baseStandPath = ConfigManager.GetStringFromConfig("CurrentBaseStandPath");
+			try
+			{				
+				var o = new
+				{
+					sourcePath,
+					destinationPath,
+					baseStandPath,
+				};				
+				Task task = new(async () =>
+				{
+					var result = await PhttpHelper.PostAsync<object>("Data/Baseline", o);
+				});
+				task.Start();
+				task.GetAwaiter().OnCompleted(() =>
+				{
+					// 幅值归一化
+					sourcePath = destinationPath;
+					destinationPath = Path.Combine(basePath, "User", $"{user!.Id}", "amplitude");
+					var oo = new
+					{
+						sourcePath,
+						destinationPath,
+						time
+					};
+					Task task1 = new(async () =>
+					{
+						var result = await PhttpHelper.PostAsync<object>("Data/Amplitude", oo);
+					});
+					task1.Start();
+					task1.GetAwaiter().OnCompleted(() => {
+						// 找峰值
+						sourcePath = destinationPath;
+						destinationPath = Path.Combine(basePath, "User", $"{user!.Id}", "find_peak");
+						var ooo = new
+						{
+							sourcePath,
+							destinationPath,
+							time
+						};
+						Task task2 = new(async () =>
+						{
+							var result = await PhttpHelper.PostAsync<object>("Data/FindPeak", ooo);
+						});
+						task2.Start();
+					});
+				});						
+			} 
+			catch(Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+			}
+			InitListBox();
+			trainDataSum = userCSVPaths.Count / 5;
+			this.roundProcess.Value = CalculateCompletion();
 		}
 
 		private void FormRegister_Load(object sender, EventArgs e)

@@ -17,7 +17,8 @@ namespace RFIDentify.UI
         public FormUsers formUsers;
         public FormRegister formRegister;
         public FormRegisterFromEquipment formRegisterFromEquipment;
-        public FormCollectUser formCollectionUser;
+        public FormCollectUser formCollectUser;
+        public FormCollectBase formCollectBase;
         public FormMain()
         {
             InitializeComponent();
@@ -26,9 +27,11 @@ namespace RFIDentify.UI
             formUsers = new(this);
             formRegister = new(this);
             formRegisterFromEquipment = new(this); 
-            formCollectionUser = new();
+            formCollectUser = new(this);
+            formCollectBase = new(this);
 
-            formRegister.UserChanged += formCollectionUser.UpdateByUser;
+            formRegister.UserChanged += formCollectUser.UpdateByUser;
+            formCollectUser.OnSave += formRegister.GenerateUserTrainData;
 
             Aside.TabControl = MainTabControl;
 
@@ -47,10 +50,12 @@ namespace RFIDentify.UI
             Aside.CreateNode("认证", pageindex++);
 
             pageindex = 4000;
-            //AddPage(formRegisterFromEquipment, pageindex);
+            AddPage(formRegisterFromEquipment, pageindex);
             TreeNode parent = Aside.CreateNode("采集", pageindex++);
-            AddPage(formCollectionUser, pageindex);
+            AddPage(formCollectUser, pageindex);
             Aside.CreateChildNode(parent, "采集人员信息", pageindex++);
+            AddPage(formCollectBase, pageindex);
+            Aside.CreateChildNode(parent, "采集基准信息", pageindex++);
         }      
     }
 }

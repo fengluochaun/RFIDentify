@@ -257,7 +257,7 @@ namespace RFIDentify.UI
 		private void btn_AddUser_Click(object sender, EventArgs e)
 		{
 			parent.formRegister.UpdateByUserId();
-			parent.SelectPage(1002);
+			parent.SelectPage(3000);
 		}
 
 		private void lbl_Identifcation_Click(object sender, EventArgs e)
