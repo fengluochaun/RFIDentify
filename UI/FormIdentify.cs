@@ -10,237 +10,85 @@ namespace RFIDentify.UI
 	public partial class FormIdentify : UIPage
 	{
 		private FormMain parent;
-
-		private readonly HttpHelper ChttpHelper = new();
 		private readonly HttpHelper PhttpHelper = new("http://127.0.0.1:5000/");
-		
-		private static readonly ReaderWriterLockSlim rwLock = new ReaderWriterLockSlim();
-		private static ConcurrentDictionary<string, List<RFIDData>> datas = new ConcurrentDictionary<string, List<RFIDData>>();
 
-		private libltkjava libltkjava = new();
-		public Batcher<RFIDData> batcher;
-		
-		private UILineOption option = new();
-		private Color[] colors =
-		{
-			Color.LightSalmon,
-			Color.LightYellow,
-			Color.DarkGray,
-			Color.OliveDrab,
-			Color.OrangeRed,
-			Color.PaleGreen,
-			Color.DarkTurquoise,
-			Color.LightPink
-		};
-		private Timer chartRefreshTimer;
-		private Thread threadRead;
-
-		private readonly int MaxMilliSecondRange = 6000;
-		private readonly int timeout = 10000;
-
+		private string? writeCsvFilePath;
+		private List<string> baseStandPathList = new List<string>();
 		private readonly string basePath = AppDomain.CurrentDomain.BaseDirectory;
-		private readonly string IdentificationPath_ = "CollectionData\\Identification\\temp.csv";//识别数据存储路径
-		private readonly string baseStandPath_ = "CollectionData\\Base\\baseStand.csv";
-#if SIMULATION
-		private static ManualResetEvent _threadOne = new ManualResetEvent(false);
-		public static bool[] _isOpen = new bool[] { false };
-#else
-		private readonly string readerPath = "Speedwayr-11-25-ab.local";//读写器连接路径
-#endif
+		private readonly string IdentificationPath_ = $"CollectionData\\Identification\\temp{DateTime.Now:yyyyMMddHHmmss}.csv";//识别数据存储路径
+		private readonly string defaultBaseStandPath = "CollectionData\\Base\\baseStand.csv";
 		public FormIdentify(FormMain parent)
 		{
 			InitializeComponent();
 			this.parent = parent;
-#if !SIMULATION
-			libltkjava.ReadData += ReadDataFromEqu;
-			libltkjava.powerON(readerPath, IdentificationPath_);
-#endif
-			batcher = new Batcher<RFIDData>(
-				processor: Process,
-				batchSize: 20,
-				interval: TimeSpan.FromSeconds(5)
-				);
-			
-			// 初始化 Chart
-			option.ToolTip.Visible = true;
-			option.Title = new UITitle();
-			option.Title.Text = "RFID";
-			option.Title.SubText = "PhaseLineChart";
-			lineChart.SetOption(option);
 
-			threadRead  = new Thread(StartRead)
+			eChart.EnableSaveButton();
+			eChart.AccessibilityObject.Name = "采集人员信息";
+			eChart.WriteCsvFilePath = basePath + IdentificationPath_;
+
+			baseStandPathList = ConfigManager.GetStringListFromConfig("BaseStandPathList");
+			if (baseStandPathList.Count == 0)
 			{
-				IsBackground = true
-			};
-
-			// 初始化 Timer
-			chartRefreshTimer = new Timer();
-			chartRefreshTimer.Interval = 50; // 设置定时器间隔，单位为毫秒（这里设置为5秒）
-			chartRefreshTimer.Tick += ChartRefreshTimer_Tick;
-
-		}
-		private async void StartRead()
-		{
-#if SIMULATION
-			long time = ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds();
-			Random random = new Random();
-			for (int i = 0; i < 100000; i++)
-			{
-				if (!_isOpen[0])
-				{
-					_threadOne.Reset();
-					_threadOne.WaitOne();
-				}
-				List<RFIDData> data = new List<RFIDData>();
-				for (int j = 1; j <= 5; j++)
-				{
-					RFIDData arg = new RFIDData()
-					{
-						Time = ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds() - time,
-						Tag = "val" + j.ToString(),
-						Phase = 4096 * random.NextDouble(),
-					};
-					batcher.Add(arg);
-					data.Add(arg);
-				}
-				await Task.Delay(10);
+				baseStandPathList.Add(basePath + defaultBaseStandPath);
+				ConfigManager.SaveStringListToConfig("BaseStandPathList", baseStandPathList);
+				ConfigManager.SaveValueToConfig("CurrentBaseStandPath", "0");
 			}
-#else
-			this.libltkjava.startRead(null);
-#endif
+
+			InitializeComboBox();
 		}
 
-		/// <summary>
-		/// Batcher 数据处理函数
-		/// </summary>
-		/// <param name="batch"></param>
-		private void Process(Batch<RFIDData> batch)
+		private void InitializeComboBox()
 		{
-			using (batch)
-			{
-				try
-				{
-					rwLock.EnterWriteLock();
-					foreach (RFIDData data in batch)
-					{
-						string tag = data.Tag!;
-						if (!datas.ContainsKey(tag))
-						{
-							data.Tag = "val" + (datas.Count + 1);
-							List<RFIDData> list = new List<RFIDData>();
-							list.Add(data);
-							datas.TryAdd(tag, list);
-							var series = option.AddSeries(new UILineSeries(data.Tag!));
-							series.Color = colors[datas.Count + 1];
-						}
-						//DataProcess.Baseline(data); // 基准化
-						data.Tag = datas[tag][0].Tag;
-						datas[tag].Add(data);
+			var list = baseStandPathList.Select(x => x.Split('\\').Last()).ToList();
+			comboBox.DataSource = list;
+			comboBox.SelectedIndex = ConfigManager.GetIntFromConfig("CurrentBaseStandPath");
+		}
 
-						// 限制数据量
-						if (datas[tag].Count >= 10000)
-						{
-							datas[tag].RemoveRange(0, datas[tag].Count - 5000);
-						}
-					}
-				}
-				catch (ArgumentException ex)
+		private void UpdateComboBox()
+		{
+			var list = baseStandPathList.Select(x => x.Split('\\').Last()).ToList();
+			comboBox.DataSource = list;
+			comboBox.SelectedIndex = list.Count - 1;
+		}
+
+		private void btn_SelectFile_Click(object sender, EventArgs e)
+		{
+			string filename = "";
+			try
+			{
+				if (FileEx.OpenDialog(ref filename, "CSV files (*.csv)|*.csv|All files (*.*)|*.*", "csv"))
 				{
-					Console.WriteLine(ex.Message);
-				}
-				catch (OverflowException ex)
-				{
-					Console.WriteLine(ex.Message);
-				}
-				finally
-				{
-					rwLock.ExitWriteLock();
+					UIMessageTip.ShowOk(filename);
 				}
 			}
-		}
-
-		private void UpdateChart()
-		{
-			if (rwLock.TryEnterReadLock(timeout))
+			catch (FileNotFoundException ex)
 			{
-				try
-				{
-					foreach (UILineSeries value in option.Series.Values)
-					{
-						value.Clear();
-					}
-					int maxCount = 0;
-					double maxTime = MaxMilliSecondRange;
-					foreach (var data in datas)
-					{
-						int count = data.Value.Count;
-						maxCount = count > maxCount ? count : maxCount;
-						int i = (count - 1000 > 0) ? count - 1000 : 0;
-						for (; i < count; i++)
-						{
-							option.AddData(data.Value[i].Tag, Convert.ToDouble(data.Value[i].Time) / 1000, data.Value[i].Phase);
-							double temp = Convert.ToDouble(data.Value[i].Time);
-							maxTime = (temp > maxTime ? temp : maxTime)!;
-						}
-					}
-					option.XAxis.SetRange((maxTime - MaxMilliSecondRange) / 1000, maxTime / 1000);
-					this.lineChart.Refresh();
-				}
-				catch (Exception ex)
-				{
-					Console.WriteLine(ex.Message);
-				}
-				finally
-				{
-					rwLock.ExitReadLock();
-				}
+				Console.WriteLine(ex.Message);
 			}
-			else
+
+			if (string.IsNullOrEmpty(filename))
 			{
-				UpdateChart();
+				return;
 			}
+			baseStandPathList.Add(filename);
+			ConfigManager.SaveStringListToConfig("BaseStandPathList", baseStandPathList);
+			UpdateComboBox();
 		}
 
-		/// <summary>
-		/// 读取设备数据
-		/// </summary>
-		/// <param name="args"></param>
-		private void ReadDataFromEqu(RFIDData data)
+		private void comboBox_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			batcher.Add(data);
-		}
-
-		private void ChartRefreshTimer_Tick(object? sender, EventArgs e)
-		{
-			UpdateChart();
-		}
-
-		private void btn_Start_Click(object sender, EventArgs e)
-		{
-			if ((threadRead.ThreadState & ThreadState.Unstarted) == ThreadState.Unstarted)
-			{
-				threadRead.Start();
-			}
-			// 启动定时器
-			chartRefreshTimer.Start();
-#if SIMULATION
-			_isOpen[0] = true;
-			_threadOne.Set();
-#endif
+			uiToolTip.SetToolTip(comboBox, baseStandPathList[comboBox.SelectedIndex]);
+			ConfigManager.SaveValueToConfig("CurrentBaseStandPath", comboBox.SelectedIndex.ToString());
+			DataProcess.UpdateBaseStand(baseStandPathList[comboBox.SelectedIndex]);
 		}
 
 		private void btn_Stop_Click(object sender, EventArgs e)
 		{
-#if SIMULATION
-			_isOpen[0] = false;
-#else
-			libltkjava.stop();
-#endif
 			// 上传识别数据
 			var o = new
 			{
 				filePath = basePath + IdentificationPath_,
-				baseStandPath = basePath + baseStandPath_
+				baseStandPath = basePath + ConfigManager.GetStringFromConfig("CurrentBaseStandPath")
 			};
 			Task task = new(async () =>
 			{
@@ -252,12 +100,6 @@ namespace RFIDentify.UI
 				this.BeginInvoke(mi);
 			});
 			task.Start();
-		}
-
-		private void btn_AddUser_Click(object sender, EventArgs e)
-		{
-			parent.formRegister.UpdateByUserId();
-			parent.SelectPage(3000);
 		}
 
 		private void lbl_Identifcation_Click(object sender, EventArgs e)

@@ -28,11 +28,13 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			components = new System.ComponentModel.Container();
 			lbl_Identification = new Label();
-			btn_Start = new Button();
-			btn_Stop = new Button();
-			btn_AddUser = new Button();
-			lineChart = new Sunny.UI.UILineChart();
+			eChart = new EChart();
+			btn_SelectFile = new Sunny.UI.UISymbolButton();
+			comboBox = new Sunny.UI.UIComboBox();
+			uiLabel1 = new Sunny.UI.UILabel();
+			uiToolTip = new Sunny.UI.UIToolTip(components);
 			SuspendLayout();
 			// 
 			// lbl_Identification
@@ -46,60 +48,78 @@
 			lbl_Identification.Text = "识别对象：";
 			lbl_Identification.Click += lbl_Identifcation_Click;
 			// 
-			// btn_Start
+			// eChart
 			// 
-			btn_Start.Font = new Font("Microsoft YaHei UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-			btn_Start.Location = new Point(538, 67);
-			btn_Start.Name = "btn_Start";
-			btn_Start.Size = new Size(116, 35);
-			btn_Start.TabIndex = 1;
-			btn_Start.Text = "开始";
-			btn_Start.UseVisualStyleBackColor = true;
-			btn_Start.Click += btn_Start_Click;
+			eChart.BaseStandPath = "\\\\?\\C:\\Users\\feng\\AppData\\Local\\Microsoft\\VisualStudio\\17.0_6fd65f15\\WinFormsDesigner\\l4dh0ro5.w4r\\CollectionData/Base/baseStand.csv";
+			eChart.IsProcessed = true;
+			eChart.Location = new Point(45, 121);
+			eChart.Name = "eChart";
+			eChart.Size = new Size(939, 582);
+			eChart.TabIndex = 10;
+			eChart.WriteCsvFilePath = null;
 			// 
-			// btn_Stop
+			// btn_SelectFile
 			// 
-			btn_Stop.Font = new Font("Microsoft YaHei UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-			btn_Stop.Location = new Point(706, 67);
-			btn_Stop.Name = "btn_Stop";
-			btn_Stop.Size = new Size(116, 35);
-			btn_Stop.TabIndex = 1;
-			btn_Stop.Text = "停止";
-			btn_Stop.UseVisualStyleBackColor = true;
-			btn_Stop.Click += btn_Stop_Click;
+			btn_SelectFile.FillColor = SystemColors.Control;
+			btn_SelectFile.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point);
+			btn_SelectFile.ForeColor = Color.Black;
+			btn_SelectFile.Location = new Point(781, 65);
+			btn_SelectFile.MinimumSize = new Size(1, 1);
+			btn_SelectFile.Name = "btn_SelectFile";
+			btn_SelectFile.RectColor = SystemColors.ControlDark;
+			btn_SelectFile.Size = new Size(132, 36);
+			btn_SelectFile.Symbol = 61717;
+			btn_SelectFile.SymbolColor = Color.Black;
+			btn_SelectFile.TabIndex = 13;
+			btn_SelectFile.Text = "选择文件";
+			btn_SelectFile.Click += btn_SelectFile_Click;
 			// 
-			// btn_AddUser
+			// comboBox
 			// 
-			btn_AddUser.Font = new Font("Microsoft YaHei UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-			btn_AddUser.Location = new Point(870, 67);
-			btn_AddUser.Name = "btn_AddUser";
-			btn_AddUser.Size = new Size(116, 35);
-			btn_AddUser.TabIndex = 1;
-			btn_AddUser.Text = "添加用户";
-			btn_AddUser.UseVisualStyleBackColor = true;
-			btn_AddUser.Click += btn_AddUser_Click;
+			comboBox.DataSource = null;
+			comboBox.FillColor = Color.White;
+			comboBox.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point);
+			comboBox.ItemHoverColor = Color.FromArgb(155, 200, 255);
+			comboBox.ItemSelectForeColor = Color.FromArgb(235, 243, 255);
+			comboBox.Location = new Point(508, 65);
+			comboBox.Margin = new Padding(4, 5, 4, 5);
+			comboBox.MinimumSize = new Size(63, 0);
+			comboBox.Name = "comboBox";
+			comboBox.Padding = new Padding(0, 0, 30, 2);
+			comboBox.RectColor = SystemColors.ControlDark;
+			comboBox.Size = new Size(266, 36);
+			comboBox.TabIndex = 12;
+			comboBox.Text = "选择基准值文件";
+			comboBox.TextAlignment = ContentAlignment.MiddleLeft;
+			comboBox.Watermark = "";
+			comboBox.SelectedIndexChanged += comboBox_SelectedIndexChanged;
 			// 
-			// lineChart
+			// uiLabel1
 			// 
-			lineChart.Font = new Font("宋体", 12F, FontStyle.Regular, GraphicsUnit.Point);
-			lineChart.LegendFont = new Font("宋体", 9F, FontStyle.Regular, GraphicsUnit.Point);
-			lineChart.Location = new Point(58, 151);
-			lineChart.MinimumSize = new Size(1, 1);
-			lineChart.MouseDownType = Sunny.UI.UILineChartMouseDownType.Zoom;
-			lineChart.Name = "lineChart";
-			lineChart.Size = new Size(928, 537);
-			lineChart.SubFont = new Font("宋体", 9F, FontStyle.Regular, GraphicsUnit.Point);
-			lineChart.TabIndex = 3;
-			lineChart.Text = "uiLineChart1";
+			uiLabel1.Font = new Font("宋体", 14F, FontStyle.Regular, GraphicsUnit.Point);
+			uiLabel1.ForeColor = Color.FromArgb(48, 48, 48);
+			uiLabel1.Location = new Point(346, 65);
+			uiLabel1.Name = "uiLabel1";
+			uiLabel1.Size = new Size(155, 36);
+			uiLabel1.Style = Sunny.UI.UIStyle.Custom;
+			uiLabel1.TabIndex = 11;
+			uiLabel1.Text = "基准值文件：";
+			uiLabel1.TextAlign = ContentAlignment.MiddleCenter;
+			// 
+			// uiToolTip
+			// 
+			uiToolTip.BackColor = Color.FromArgb(54, 54, 54);
+			uiToolTip.ForeColor = Color.FromArgb(239, 239, 239);
+			uiToolTip.OwnerDraw = true;
 			// 
 			// FormIdentify
 			// 
 			AutoScaleMode = AutoScaleMode.None;
 			ClientSize = new Size(1030, 700);
-			Controls.Add(lineChart);
-			Controls.Add(btn_AddUser);
-			Controls.Add(btn_Stop);
-			Controls.Add(btn_Start);
+			Controls.Add(btn_SelectFile);
+			Controls.Add(comboBox);
+			Controls.Add(uiLabel1);
+			Controls.Add(eChart);
 			Controls.Add(lbl_Identification);
 			Name = "FormIdentify";
 			Text = "FormIdentify";
@@ -110,9 +130,10 @@
 		#endregion
 
 		private Label lbl_Identification;
-		private Button btn_Start;
-		private Button btn_Stop;
-		private Button btn_AddUser;
-		private Sunny.UI.UILineChart lineChart;
+		private EChart eChart;
+		private Sunny.UI.UISymbolButton btn_SelectFile;
+		private Sunny.UI.UIComboBox comboBox;
+		private Sunny.UI.UILabel uiLabel1;
+		private Sunny.UI.UIToolTip uiToolTip;
 	}
 }
