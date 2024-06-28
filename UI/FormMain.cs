@@ -14,6 +14,7 @@ namespace RFIDentify.UI
     public partial class FormMain : UIAsideMainFrame
     {
         public FormIdentify formIdentify;
+        public FormIdentifyRecords formIdentifyRecords;
         public FormUsers formUsers;
         public FormRegister formRegister;
         public FormRegisterFromEquipment formRegisterFromEquipment;
@@ -24,6 +25,7 @@ namespace RFIDentify.UI
             InitializeComponent();
 
             formIdentify = new(this);
+            formIdentifyRecords = new(this);
             formUsers = new(this);
             formRegister = new(this);
             formRegisterFromEquipment = new(this); 
@@ -35,13 +37,15 @@ namespace RFIDentify.UI
 
             Aside.TabControl = MainTabControl;
 
-            int pageindex = 1000;            
-            
+            int pageindex = 1000;
+
+            TreeNode parent = Aside.CreateNode("识别", pageindex++);
             AddPage(formIdentify, pageindex);
-            Aside.CreateNode("识别", pageindex++);
+            Aside.CreateChildNode(parent, "识别人员", pageindex++);
+            AddPage(formIdentifyRecords, pageindex);
+            Aside.CreateChildNode(parent, "识别记录", pageindex++);
 
             pageindex = 2000;
-
             AddPage(formUsers, pageindex);
             Aside.CreateNode("人员", pageindex++);
 
@@ -50,8 +54,8 @@ namespace RFIDentify.UI
             Aside.CreateNode("认证", pageindex++);
 
             pageindex = 4000;
-            AddPage(formRegisterFromEquipment, pageindex);
-            TreeNode parent = Aside.CreateNode("采集", pageindex++);
+            //AddPage(formRegisterFromEquipment, pageindex);
+            parent = Aside.CreateNode("采集", pageindex++);
             AddPage(formCollectUser, pageindex);
             Aside.CreateChildNode(parent, "采集人员信息", pageindex++);
             AddPage(formCollectBase, pageindex);

@@ -27,6 +27,7 @@ namespace RFIDentify.UI
 	{
 		public Batcher<RFIDData> batcher;
 		public Action? OnSave;
+		public Action? OnStop;
 		public bool IsProcessed { get; set; } = true;
 
 		private readonly string basePath = AppDomain.CurrentDomain.BaseDirectory;
@@ -429,6 +430,7 @@ namespace RFIDentify.UI
 #else
 			libltkjava.PowerOff();
 #endif
+			OnStop!.Invoke();
 		}
 
 		private void btn_Save_Click(object? sender, EventArgs e)

@@ -3,6 +3,10 @@
 using RFIDentify.Com;
 using Sunny.UI;
 using System.Collections.Concurrent;
+using System.Data.SQLite;
+using System.Data;
+using RFIDentify.Models;
+using RFIDentify.DAO;
 using Timer = System.Windows.Forms.Timer;
 
 namespace RFIDentify.UI
@@ -11,7 +15,8 @@ namespace RFIDentify.UI
 	{
 		private FormMain parent;
 		private readonly HttpHelper PhttpHelper = new("http://127.0.0.1:5000/");
-
+		private SQLiteHelper SQLiteHelper = SQLiteHelper.GetInstance();
+		private UserDao userDao = new();
 		private string? writeCsvFilePath;
 		private List<string> baseStandPathList = new List<string>();
 		private readonly string basePath = AppDomain.CurrentDomain.BaseDirectory;
@@ -21,8 +26,8 @@ namespace RFIDentify.UI
 		{
 			InitializeComponent();
 			this.parent = parent;
+			this.eChart.OnStop += btn_Stop_Click;
 
-			eChart.EnableSaveButton();
 			eChart.AccessibilityObject.Name = "采集人员信息";
 			eChart.WriteCsvFilePath = basePath + IdentificationPath_;
 
@@ -82,7 +87,7 @@ namespace RFIDentify.UI
 			DataProcess.UpdateBaseStand(baseStandPathList[comboBox.SelectedIndex]);
 		}
 
-		private void btn_Stop_Click(object sender, EventArgs e)
+		private void btn_Stop_Click()
 		{
 			// 上传识别数据
 			var o = new
@@ -95,11 +100,64 @@ namespace RFIDentify.UI
 				var result = await PhttpHelper.PostAsync<object>("User/UserRecognition", o);
 				MethodInvoker mi = new MethodInvoker(() =>
 				{
-					this.lbl_Identification.Text = "识别对象：" + result.ToString();
+					try
+					{
+						this.lbl_Identification.Text = "识别对象：" + result.ToString();
+					}
+					catch (Exception e)
+					{
+						MessageBox.Show(e.Message);
+					}
 				});
+				int re = Convert.ToInt32(result);
+				if (re == -1)
+				{
+					await AddRecord(re, "未录入");
+				}
+				else if (re == 0)
+				{
+					await AddRecord(re, "异常");
+				}
+				else 
+				{ 
+					await AddRecord(re, "成功");
+					
+				}
 				this.BeginInvoke(mi);
 			});
 			task.Start();
+		}
+
+		private async Task<int> AddRecord(int userId, string status)
+		{
+			SQLiteParameter[] parameters;
+			string sql;
+			if (userId >= 0 && status == "成功")
+			{
+				string name = userDao.GetUserById(userId).Result.FirstOrDefault()!.Name!;
+				parameters = new SQLiteParameter[]
+				{
+					new SQLiteParameter("@UserId", userId),
+					new SQLiteParameter("@Name", name),
+					new SQLiteParameter("@Time", DateTime.Now),
+					new SQLiteParameter("@RecognitionStatus", status)
+				};
+				sql = "insert into [IdentificationRecords] ('UserId','Name','Time','RecognitionStatus') " +
+				"values (@UserId,@Name,@Time,@RecognitionStatus)";
+			}
+			else
+			{
+				parameters = new SQLiteParameter[]
+				{
+					new SQLiteParameter("@UserId", userId),
+					new SQLiteParameter("@Time", DateTime.Now),
+					new SQLiteParameter("@RecognitionStatus", status)
+				};
+				sql = "insert into [IdentificationRecords] ('UserId','Time','RecognitionStatus') " +
+				"values (@UserId,@Time,@RecognitionStatus)";
+			}			 
+			int i = await this.SQLiteHelper.Execute(sql, parameters);
+			return i;
 		}
 
 		private void lbl_Identifcation_Click(object sender, EventArgs e)

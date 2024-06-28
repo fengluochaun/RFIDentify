@@ -1001,9 +1001,4 @@ namespace RFIDentify.Com
         public int Channel { get; set; }
         public double RSSI { get; set; }
     }
-
-    public class CSVRFIDData
-    {
-        
-    }
 }
